@@ -4,7 +4,7 @@ import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import srtmElevation from '../data/indiaSRTMElevation.json';
 import realisticMapData from '../data/indiaRealisticMapData.json';
 import damImages from '../data/damImages.json';
-import indiaGeo from '../data/indiaGeoData.json';
+import southIndiaDamsData from '../data/south_india_dams.json';
 import { 
   Compass, 
   RotateCcw, 
@@ -12,7 +12,16 @@ import {
   MapPin, 
   ShieldAlert, 
   Activity, 
-  Camera 
+  Camera,
+  X,
+  Database,
+  Info,
+  CheckCircle2,
+  ExternalLink,
+  Layers,
+  AlertTriangle,
+  Droplets,
+  ShieldCheck
 } from 'lucide-react';
 
 // Geographic Bounding Box matching stitched ESRI satellite texture & SRTM grid
@@ -73,45 +82,6 @@ function getSRTMElevationAt(lat, lon) {
   return Math.max(0.0, (elevM / 1000.0) * ELEVATION_SCALE);
 }
 
-// Generate high-DPI cartographic city landmark sprite
-function createLandmarkSprite(name, isMajor = false) {
-  const canvas = document.createElement('canvas');
-  canvas.width = 256;
-  canvas.height = 64;
-  const ctx = canvas.getContext('2d');
-
-  ctx.clearRect(0, 0, 256, 64);
-
-  // Subtle dot anchor
-  ctx.beginPath();
-  ctx.arc(24, 32, isMajor ? 5 : 3.5, 0, Math.PI * 2);
-  ctx.fillStyle = isMajor ? '#6bbf9e' : '#8ca293';
-  ctx.fill();
-  ctx.lineWidth = 1.5;
-  ctx.strokeStyle = '#e8ede8';
-  ctx.stroke();
-
-  // Monospace cartographic label
-  ctx.font = isMajor ? 'bold 22px monospace' : '500 18px monospace';
-  ctx.fillStyle = '#e8ede8';
-  ctx.shadowColor = 'rgba(0, 0, 0, 0.95)';
-  ctx.shadowBlur = 6;
-  ctx.shadowOffsetX = 1;
-  ctx.shadowOffsetY = 1;
-  ctx.fillText(name.toUpperCase(), 36, 38);
-
-  const texture = new THREE.CanvasTexture(canvas);
-  texture.minFilter = THREE.LinearFilter;
-  const mat = new THREE.SpriteMaterial({ 
-    map: texture, 
-    transparent: true, 
-    depthTest: false 
-  });
-  const sprite = new THREE.Sprite(mat);
-  sprite.scale.set(16, 4, 1);
-  return sprite;
-}
-
 export default function ThreeIndiaMap({
   selectedDam,
   onSelectDam,
@@ -127,6 +97,14 @@ export default function ThreeIndiaMap({
   const activeRiverPulseRef = useRef(null);
   const animFrameIdRef = useRef(null);
 
+  // Active State Filter: 'ALL' | 'Tamil Nadu' | 'Kerala' | 'Karnataka' | 'Andhra Pradesh'
+  const [activeStateFilter, setActiveStateFilter] = useState('ALL');
+
+  // Currently inspected dam for rich CWC NRLD Detail Panel
+  const [inspectedDam, setInspectedDam] = useState(
+    southIndiaDamsData.dams.find(d => d.id === selectedDam?.id) || southIndiaDamsData.dams[0]
+  );
+
   // Hovered Dam State for Floating HUD Info Card
   const [hoveredDam, setHoveredDam] = useState(null);
   const [hudPos, setHudPos] = useState({ x: 0, y: 0, visible: false });
@@ -139,7 +117,7 @@ export default function ThreeIndiaMap({
     if (!mountRef.current) return;
     const container = mountRef.current;
     const width = container.clientWidth || 900;
-    const height = container.clientHeight || 540;
+    const height = container.clientHeight || 560;
 
     // 1. Scene, Camera, WebGL Renderer
     const scene = new THREE.Scene();
@@ -167,13 +145,12 @@ export default function ThreeIndiaMap({
     controls.enableDamping = true;
     controls.dampingFactor = 0.06;
     controls.maxPolarAngle = Math.PI / 2.06;
-    controls.minDistance = 30;
+    controls.minDistance = 25;
     controls.maxDistance = 380;
     controls.target.set(0, 4, 0);
     controlsRef.current = controls;
 
     // 2. Real Solar & Atmospheric Hemisphere Lighting
-    // Directional sunlight approximating afternoon solar angle
     const sunLight = new THREE.DirectionalLight(0xfffaed, 1.9);
     sunLight.position.set(130, 240, 95);
     sunLight.castShadow = true;
@@ -184,7 +161,6 @@ export default function ThreeIndiaMap({
     sunLight.shadow.bias = -0.0004;
     scene.add(sunLight);
 
-    // Soft sky and ground hemisphere fill light (natural ambient bounce)
     const hemiLight = new THREE.HemisphereLight(0xdbeafe, 0x1e293b, 0.72);
     scene.add(hemiLight);
 
@@ -199,33 +175,33 @@ export default function ThreeIndiaMap({
     const terrainGeo = new THREE.PlaneGeometry(terrainWidth, terrainHeight, cols - 1, rows - 1);
     terrainGeo.rotateX(-Math.PI / 2);
 
-    const pos = terrainGeo.attributes.position;
+    const posAttr = terrainGeo.attributes.position;
     for (let r = 0; r < rows; r++) {
       for (let c = 0; c < cols; c++) {
         const idx = r * cols + c;
-        const elevM = srtmElevation.elevations[r][c] || 0.0;
-
-        // Displace from actual SRTM elevation data
+        const elevM = srtmElevation.elevations[r][c] || 0;
         const yVal = Math.max(0.0, (elevM / 1000.0) * ELEVATION_SCALE);
-        pos.setY(idx, yVal);
+        posAttr.setY(idx, yVal);
       }
     }
     terrainGeo.computeVertexNormals();
 
-    // Load Real Satellite Imagery Texture (ESRI World Imagery Tile Mosaic)
+    // 4. Stitched ESRI Satellite Texture
     const textureLoader = new THREE.TextureLoader();
-    const satelliteTexture = textureLoader.load('/textures/india_satellite_5.jpg', () => {
-      renderer.render(scene, camera);
-    });
-    satelliteTexture.colorSpace = THREE.SRGBColorSpace;
-    satelliteTexture.anisotropy = 8;
+    const satelliteTexture = textureLoader.load(
+      '/satellite_basemap.jpg',
+      () => renderer.render(scene, camera)
+    );
     satelliteTexture.wrapS = THREE.ClampToEdgeWrapping;
     satelliteTexture.wrapT = THREE.ClampToEdgeWrapping;
+    satelliteTexture.minFilter = THREE.LinearMipmapLinearFilter;
+    satelliteTexture.magFilter = THREE.LinearFilter;
+    satelliteTexture.colorSpace = THREE.SRGBColorSpace;
 
     const terrainMat = new THREE.MeshStandardMaterial({
       map: satelliteTexture,
-      roughness: 0.82,
-      metalness: 0.04,
+      roughness: 0.88,
+      metalness: 0.05,
       flatShading: false
     });
 
@@ -234,122 +210,90 @@ export default function ThreeIndiaMap({
     terrainMesh.castShadow = true;
     scene.add(terrainMesh);
 
-    // Deep Bathymetric Ocean Floor
+    // 5. Stylized Ocean Pedestal
     const oceanGeo = new THREE.PlaneGeometry(terrainWidth * 1.5, terrainHeight * 1.5);
     oceanGeo.rotateX(-Math.PI / 2);
     const oceanMat = new THREE.MeshStandardMaterial({
-      color: 0x050c18,
-      roughness: 0.9,
-      metalness: 0.1
+      color: 0x05131a,
+      roughness: 0.15,
+      metalness: 0.75
     });
     const oceanMesh = new THREE.Mesh(oceanGeo, oceanMat);
-    oceanMesh.position.y = -0.8;
+    oceanMesh.position.y = -0.35;
     oceanMesh.receiveShadow = true;
     scene.add(oceanMesh);
 
-    // 4. Subtle State & Basin Administrative Boundaries
-    const borderMat = new THREE.LineBasicMaterial({
-      color: 0x3d5a47,
-      transparent: true,
-      opacity: 0.38,
-      linewidth: 1
-    });
+    // 6. Major Indian River Channels
+    const riverObjects = [];
+    realisticMapData.rivers.forEach(r => {
+      const pts3D = r.coords.map(pt => geoToVector3(pt[1], pt[0], 0.45));
+      if (pts3D.length < 2) return;
 
-    realisticMapData.stateBorders.forEach(borderCoords => {
-      const bPts = borderCoords.map(([lon, lat]) => geoToVector3(lat, lon, 0.25));
-      const bGeo = new THREE.BufferGeometry().setFromPoints(bPts);
-      const bLine = new THREE.Line(bGeo, borderMat);
-      scene.add(bLine);
-    });
+      const curve = new THREE.CatmullRomCurve3(pts3D, false, 'catmullrom', 0.15);
+      const tubeGeo = new THREE.TubeGeometry(curve, pts3D.length * 6, r.width || 0.55, 6, false);
+      const isSelectedReach = r.associatedDamId === selectedDam?.id;
 
-    // 5. Realistic Rivers: Rendered as Natural Dark Riverbed Channels from Orbit
-    const riversList = [];
-
-    realisticMapData.rivers.forEach(river => {
-      const pts = river.coords.map(([lon, lat]) => geoToVector3(lat, lon, 0.15));
-      const curve = new THREE.CatmullRomCurve3(pts);
-
-      // Natural river channel: Deep dark natural reservoir water ribbon hugging the terrain
-      const riverGeo = new THREE.TubeGeometry(curve, pts.length * 3, 0.32, 5, false);
-      const naturalRiverMat = new THREE.MeshStandardMaterial({
-        color: 0x0f2922,
-        emissive: 0x000000, // Non-emissive by default
-        roughness: 0.45,
-        metalness: 0.65,
+      const tubeMat = new THREE.MeshStandardMaterial({
+        color: isSelectedReach ? 0x6bbf9e : 0x0f2922,
+        emissive: isSelectedReach ? 0x4a9d7f : 0x000000,
+        emissiveIntensity: isSelectedReach ? 1.6 : 0.0,
+        roughness: 0.3,
+        metalness: 0.4,
         transparent: true,
-        opacity: 0.88
+        opacity: isSelectedReach ? 1.0 : 0.88
       });
-      const riverMesh = new THREE.Mesh(riverGeo, naturalRiverMat);
-      riverMesh.userData = { riverId: river.id, damId: river.associatedDamId };
+
+      const riverMesh = new THREE.Mesh(tubeGeo, tubeMat);
       scene.add(riverMesh);
 
-      // Tributaries (e.g. Bhavani River reach)
-      if (river.tributaries) {
-        river.tributaries.forEach(trib => {
-          const tribPts = trib.coords.map(([lon, lat]) => geoToVector3(lat, lon, 0.15));
-          const tribCurve = new THREE.CatmullRomCurve3(tribPts);
-          const tribGeo = new THREE.TubeGeometry(tribCurve, tribPts.length * 3, 0.28, 5, false);
-          const tribMat = new THREE.MeshStandardMaterial({
-            color: 0x0f2922,
-            emissive: 0x000000,
-            roughness: 0.45,
-            metalness: 0.65,
-            transparent: true,
-            opacity: 0.88
-          });
-          const tribMesh = new THREE.Mesh(tribGeo, tribMat);
-          tribMesh.userData = { riverId: river.id, damId: trib.associatedDamId };
-          scene.add(tribMesh);
-          riversList.push({ mesh: tribMesh, curve: tribCurve, damId: trib.associatedDamId, isTributary: true });
-        });
-      }
-
-      riversList.push({ mesh: riverMesh, curve, damId: river.associatedDamId, isTributary: false });
+      riverObjects.push({
+        id: r.id,
+        name: r.name,
+        damId: r.associatedDamId,
+        mesh: riverMesh,
+        curve
+      });
     });
+    riversDataRef.current = riverObjects;
 
-    riversDataRef.current = riversList;
+    // 7. Active Reach Particle Flow Animation
+    const particleCount = 45;
+    const particleGeo = new THREE.BufferGeometry();
+    const particlePos = new Float32Array(particleCount * 3);
+    const particleOffsets = new Float32Array(particleCount);
 
-    // 6. Dynamic Highlight Wave Particles for the Currently-Selected Dam's Downstream River
-    const pulseCount = 35;
-    const pulseGeo = new THREE.BufferGeometry();
-    const pulsePositions = new Float32Array(pulseCount * 3);
-    pulseGeo.setAttribute('position', new THREE.BufferAttribute(pulsePositions, 3));
+    for (let i = 0; i < particleCount; i++) {
+      particleOffsets[i] = i / particleCount;
+    }
+    particleGeo.setAttribute('position', new THREE.BufferAttribute(particlePos, 3));
 
-    const pulseMat = new THREE.PointsMaterial({
+    const particleMat = new THREE.PointsMaterial({
       color: 0x6bbf9e,
-      size: 2.8,
+      size: 3.2,
       transparent: true,
-      opacity: 0.95,
+      opacity: 0.9,
       blending: THREE.AdditiveBlending
     });
-    const pulseParticles = new THREE.Points(pulseGeo, pulseMat);
-    scene.add(pulseParticles);
+
+    const particleSystem = new THREE.Points(particleGeo, particleMat);
+    scene.add(particleSystem);
 
     activeRiverPulseRef.current = {
-      system: pulseParticles,
-      count: pulseCount,
-      offsets: Array.from({ length: pulseCount }, (_, i) => i / pulseCount),
+      system: particleSystem,
+      offsets: particleOffsets,
+      count: particleCount,
       activeCurve: null
     };
 
-    // 7. Cartographic City & Landmark Labels for Grounding Scale
-    const landmarkGroup = new THREE.Group();
-    realisticMapData.landmarks.forEach(lm => {
-      const pos = geoToVector3(lm.lat, lm.lon, 0.9);
-      const isMajor = lm.type === 'capital' || lm.type === 'metro';
-      const sprite = createLandmarkSprite(lm.name, isMajor);
-      sprite.position.copy(pos);
-      landmarkGroup.add(sprite);
-    });
-    scene.add(landmarkGroup);
-
-    // 8. Dam Interactive 3D Markers (Tactical UI Chrome - Distinct Reservoir Palette)
-    const markers = [];
+    // 8. 3D Dam Markers: Tactical glowing beacons for all 20 South Indian Dams
     const markerGroup = new THREE.Group();
     scene.add(markerGroup);
 
-    indiaGeo.damsMarkers.forEach(dam => {
-      const pos = geoToVector3(dam.coords[0], dam.coords[1], 0.7);
+    const markers = [];
+
+    southIndiaDamsData.dams.forEach(dam => {
+      const coords = dam.coordinates || dam.coords;
+      const pos = geoToVector3(coords[0], coords[1], 0.7);
       const isCurrent = selectedDam?.id === dam.id;
 
       const damObj = new THREE.Group();
@@ -477,9 +421,11 @@ export default function ThreeIndiaMap({
 
       if (intersects.length > 0) {
         const clickedDam = intersects[0].object.userData.dam;
+        setInspectedDam(clickedDam);
         onSelectDam(clickedDam);
 
-        const damPos = geoToVector3(clickedDam.coords[0], clickedDam.coords[1], 0);
+        const coords = clickedDam.coordinates || clickedDam.coords;
+        const damPos = geoToVector3(coords[0], coords[1], 0);
         cameraTargetRef.current = {
           camPos: new THREE.Vector3(damPos.x + 16, damPos.y + 38, damPos.z + 36),
           lookAt: new THREE.Vector3(damPos.x, damPos.y + 3, damPos.z),
@@ -577,7 +523,6 @@ export default function ThreeIndiaMap({
   useEffect(() => {
     if (!selectedDam || !markersRef.current) return;
 
-    // 1. Update 3D Dam Markers
     markersRef.current.forEach(m => {
       const isCurrent = m.dam.id === selectedDam.id;
       if (m.basePadMat) {
@@ -595,23 +540,19 @@ export default function ThreeIndiaMap({
       }
     });
 
-    // 2. Update Rivers: Natural dark water for all rivers, save tactical glow ONLY for active reach
     let matchedCurve = null;
-
     if (riversDataRef.current) {
       riversDataRef.current.forEach(r => {
         const isSelectedReach = r.damId === selectedDam.id;
         if (isSelectedReach) {
-          // Tactical highlighted downstream reach: Glowing reservoir teal-green
           r.mesh.material.emissive.setHex(0x4a9d7f);
           r.mesh.material.emissiveIntensity = 1.6;
           r.mesh.material.color.setHex(0x6bbf9e);
           r.mesh.material.opacity = 1.0;
-          if (!matchedCurve || r.isTributary) {
+          if (!matchedCurve) {
             matchedCurve = r.curve;
           }
         } else {
-          // Natural dark satellite river channel (non-emissive)
           r.mesh.material.emissive.setHex(0x000000);
           r.mesh.material.emissiveIntensity = 0.0;
           r.mesh.material.color.setHex(0x0f2922);
@@ -637,10 +578,12 @@ export default function ThreeIndiaMap({
     setIsZooming(true);
   };
 
-  // Zoom into specific Dam Basin
+  // Zoom into specific Dam Basin & open detail panel
   const handleZoomDam = (dam) => {
+    setInspectedDam(dam);
     onSelectDam(dam);
-    const damPos = geoToVector3(dam.coords[0], dam.coords[1], 0);
+    const coords = dam.coordinates || dam.coords;
+    const damPos = geoToVector3(coords[0], coords[1], 0);
     cameraTargetRef.current = {
       camPos: new THREE.Vector3(damPos.x + 16, damPos.y + 38, damPos.z + 36),
       lookAt: new THREE.Vector3(damPos.x, damPos.y + 3, damPos.z),
@@ -649,163 +592,384 @@ export default function ThreeIndiaMap({
     setIsZooming(true);
   };
 
+  // State-wise Camera Focus
+  const handleStateFilterChange = (stateName) => {
+    setActiveStateFilter(stateName);
+    if (!cameraRef.current || !controlsRef.current) return;
+
+    if (stateName === 'ALL') {
+      cameraTargetRef.current = {
+        camPos: new THREE.Vector3(0, 190, 165),
+        lookAt: new THREE.Vector3(0, 4, 0),
+        progress: 0
+      };
+    } else if (stateName === 'Tamil Nadu') {
+      cameraTargetRef.current = {
+        camPos: new THREE.Vector3(-30, 85, 80),
+        lookAt: new THREE.Vector3(-42, 2, 56),
+        progress: 0
+      };
+    } else if (stateName === 'Kerala') {
+      cameraTargetRef.current = {
+        camPos: new THREE.Vector3(-36, 75, 88),
+        lookAt: new THREE.Vector3(-48, 2, 65),
+        progress: 0
+      };
+    } else if (stateName === 'Karnataka') {
+      cameraTargetRef.current = {
+        camPos: new THREE.Vector3(-38, 90, 58),
+        lookAt: new THREE.Vector3(-50, 4, 38),
+        progress: 0
+      };
+    } else if (stateName === 'Andhra Pradesh') {
+      cameraTargetRef.current = {
+        camPos: new THREE.Vector3(-18, 95, 48),
+        lookAt: new THREE.Vector3(-32, 4, 28),
+        progress: 0
+      };
+    }
+    setIsZooming(true);
+  };
+
+  // Filter visible dams based on state filter
+  const filteredDams = activeStateFilter === 'ALL'
+    ? southIndiaDamsData.dams
+    : southIndiaDamsData.dams.filter(d => d.state.includes(activeStateFilter));
+
+  const stateCounts = {
+    'ALL': southIndiaDamsData.dams.length,
+    'Tamil Nadu': southIndiaDamsData.dams.filter(d => d.state.includes('Tamil Nadu')).length,
+    'Kerala': southIndiaDamsData.dams.filter(d => d.state.includes('Kerala')).length,
+    'Karnataka': southIndiaDamsData.dams.filter(d => d.state.includes('Karnataka')).length,
+    'Andhra Pradesh': southIndiaDamsData.dams.filter(d => d.state.includes('Andhra Pradesh')).length
+  };
+
   return (
     <div className="w-full relative overflow-hidden rounded-2xl border border-slate-800 bg-[#0a100c] shadow-2xl">
       {/* 3D Canvas Mount Point */}
       <div 
         ref={mountRef} 
-        style={{ width: '100%', height: '540px', minHeight: '480px' }}
-        className="w-full h-[540px] cursor-grab active:cursor-grabbing" 
+        style={{ width: '100%', height: '580px', minHeight: '520px' }}
+        className="w-full h-[580px] cursor-grab active:cursor-grabbing" 
       />
 
-      {/* Top Left HUD Telemetry Overlay */}
-      <div className="absolute top-4 left-4 flex flex-col gap-2 pointer-events-none">
-        <div className="bg-[#101a14]/90 backdrop-blur-md px-3.5 py-2 rounded-xl border border-cyan-800/50 shadow-xl flex items-center gap-2.5">
-          <span className="w-2.5 h-2.5 rounded-full bg-cyan-400 animate-ping" />
+      {/* Top Left: Subcontinent Telemetry & State Filter Tabs */}
+      <div className="absolute top-3 left-3 flex flex-col gap-2 z-10 pointer-events-auto">
+        <div className="bg-[#101a14]/90 backdrop-blur-md px-3 py-1.5 rounded-xl border border-cyan-800/50 shadow-xl flex items-center gap-2.5">
+          <span className="w-2 h-2 rounded-full bg-cyan-400 animate-ping" />
           <div className="font-mono text-xs">
             <span className="text-cyan-400 font-bold tracking-wider">
-              REAL SRTM 30m ELEVATION • ESRI SATELLITE SENSING
+              SOUTH INDIA CWC NRLD AUDIT SCOPE
             </span>
             <span className="text-slate-400 text-[10px] block">
-              PHOTOREALISTIC DISPLACED RELIEF • NATURAL MEANDER RIVERBEDS
+              20 Specified Large Dams • SRTM 30m Displaced Terrain
             </span>
           </div>
         </div>
 
-        {/* Selected Dam Chip */}
-        <div className="bg-[#131f18]/85 backdrop-blur-md px-3 py-1.5 rounded-lg border border-slate-700/80 text-[11px] font-mono flex items-center gap-3">
-          <span className="text-slate-400">ACTIVE BASIN:</span>
-          <span className="text-cyan-300 font-semibold">{selectedDam?.river || 'Cauvery'}</span>
-          <span className="text-slate-600">|</span>
-          <span className="text-amber-300 font-semibold">{selectedDam?.name || 'Bhavanisagar'}</span>
+        {/* State Cluster Filter Pills */}
+        <div className="flex items-center gap-1.5 bg-[#0d1410]/90 backdrop-blur-md p-1 rounded-lg border border-slate-800 text-[11px] font-mono">
+          {['ALL', 'Tamil Nadu', 'Kerala', 'Karnataka', 'Andhra Pradesh'].map((stateName) => {
+            const isSelected = activeStateFilter === stateName;
+            return (
+              <button
+                key={stateName}
+                onClick={() => handleStateFilterChange(stateName)}
+                className={`px-2.5 py-1 rounded text-[10px] font-semibold transition-all cursor-pointer whitespace-nowrap ${
+                  isSelected
+                    ? 'bg-cyan-500 text-slate-950 font-bold shadow-md shadow-cyan-500/25'
+                    : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60'
+                }`}
+              >
+                {stateName === 'ALL' ? 'ALL REGIONS' : stateName.toUpperCase()} ({stateCounts[stateName]})
+              </button>
+            );
+          })}
         </div>
       </div>
 
-      {/* Top Right Tactical Controls */}
-      <div className="absolute top-4 right-4 flex items-center gap-2">
+      {/* Top Right Controls */}
+      <div className="absolute top-3 right-3 flex items-center gap-2 z-10">
         <button
           onClick={handleResetView}
           title="Reset to Subcontinent Overview"
-          className="bg-slate-900/90 hover:bg-slate-800 text-slate-300 hover:text-cyan-300 border border-slate-700/80 px-3 py-1.5 rounded-lg text-xs font-mono flex items-center gap-1.5 shadow-lg backdrop-blur-md transition-all cursor-pointer"
+          className="bg-slate-900/90 hover:bg-slate-800 text-slate-300 hover:text-cyan-300 border border-slate-700/80 px-2.5 py-1.5 rounded-lg text-xs font-mono flex items-center gap-1.5 shadow-lg backdrop-blur-md transition-all cursor-pointer"
         >
           <RotateCcw className="w-3.5 h-3.5 text-cyan-400" />
-          <span>SUBCONTINENT VIEW</span>
+          <span className="hidden sm:inline">OVERVIEW</span>
         </button>
 
         {selectedDam && (
           <button
             onClick={() => handleZoomDam(selectedDam)}
             title="Focus Camera onto Selected Basin"
-            className="bg-cyan-950/80 hover:bg-cyan-900 text-cyan-300 border border-cyan-700/80 px-3 py-1.5 rounded-lg text-xs font-mono flex items-center gap-1.5 shadow-lg backdrop-blur-md transition-all cursor-pointer"
+            className="bg-cyan-950/80 hover:bg-cyan-900 text-cyan-300 border border-cyan-700/80 px-2.5 py-1.5 rounded-lg text-xs font-mono flex items-center gap-1.5 shadow-lg backdrop-blur-md transition-all cursor-pointer"
           >
             <Compass className="w-3.5 h-3.5 text-cyan-400" />
-            <span>ZOOM TO BASIN</span>
+            <span className="hidden sm:inline">FOCUS DAM</span>
           </button>
         )}
       </div>
 
-      {/* Floating 3D Hover Info Card */}
-      {hudPos.visible && hoveredDam && (
+      {/* Floating 3D Hover Quick Card */}
+      {hudPos.visible && hoveredDam && !inspectedDam && (
         <div
           style={{
             left: `${Math.min(window.innerWidth - 320, Math.max(20, hudPos.x + 18))}px`,
             top: `${Math.min(460, Math.max(20, hudPos.y - 70))}px`,
           }}
-          className="absolute z-20 pointer-events-none w-72 bg-[#101a14]/95 backdrop-blur-xl border border-cyan-500/60 rounded-xl p-3 shadow-2xl shadow-slate-950/80 space-y-2.5 animate-in fade-in zoom-in-95 duration-150"
+          className="absolute z-20 pointer-events-none w-72 bg-[#101a14]/95 backdrop-blur-xl border border-cyan-500/60 rounded-xl p-3 shadow-2xl space-y-2 animate-in fade-in zoom-in-95 duration-150 font-mono"
         >
-          <div className="flex items-start justify-between gap-2 border-b border-slate-800 pb-2">
+          <div className="flex items-start justify-between gap-2 border-b border-slate-800 pb-1.5">
             <div>
-              <span className="text-[10px] font-mono uppercase px-1.5 py-0.5 rounded bg-cyan-950 text-cyan-300 border border-cyan-800">
+              <span className="text-[9px] uppercase px-1.5 py-0.5 rounded bg-cyan-950 text-cyan-300 border border-cyan-800">
                 {hoveredDam.state}
               </span>
               <h4 className="font-display font-bold text-sm text-slate-100 mt-1">
                 {hoveredDam.name}
               </h4>
             </div>
-            <span 
-              style={{ backgroundColor: `${hoveredDam.riskColor}25`, color: hoveredDam.riskColor, borderColor: hoveredDam.riskColor }}
-              className="text-[9px] font-mono font-bold px-2 py-0.5 rounded border"
-            >
-              {hoveredDam.riskLevel}
+            <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-amber-950/80 text-amber-300 border border-amber-800">
+              {hoveredDam.downstreamContext?.floodRiskLevel || 'MONITORED'}
             </span>
           </div>
 
-          {damImages[hoveredDam.id] && (
-            <div className="h-24 rounded-lg overflow-hidden relative border border-slate-800">
-              <img
-                src={damImages[hoveredDam.id].imageUrl}
-                alt={hoveredDam.name}
-                className="w-full h-full object-cover"
-              />
-              <div className="absolute bottom-1 right-1 bg-black/75 px-1.5 py-0.5 rounded text-[8px] font-mono text-cyan-300">
-                Wikimedia Commons
-              </div>
-            </div>
-          )}
-
-          <div className="grid grid-cols-2 gap-2 text-[11px] font-mono">
+          <div className="grid grid-cols-2 gap-1.5 text-[10px]">
             <div className="bg-slate-950/70 p-1.5 rounded border border-slate-800/80">
-              <span className="text-slate-400 block text-[9px]">RIVER</span>
+              <span className="text-slate-400 block text-[8.5px]">RIVER</span>
               <span className="text-slate-200 font-bold truncate block">{hoveredDam.river}</span>
             </div>
             <div className="bg-slate-950/70 p-1.5 rounded border border-slate-800/80">
-              <span className="text-slate-400 block text-[9px]">STORAGE (FRL)</span>
-              <span className="text-cyan-400 font-bold">{hoveredDam.capacityMm3} Mm³</span>
+              <span className="text-slate-400 block text-[8.5px]">GROSS STORAGE</span>
+              <span className="text-cyan-400 font-bold">{hoveredDam.grossStorageTmc} TMC</span>
             </div>
           </div>
 
-          <div className="text-[10px] font-mono text-cyan-400 flex items-center justify-between pt-1">
-            <span>Click marker to focus basin</span>
+          <div className="text-[9.5px] text-cyan-400 flex items-center justify-between pt-0.5">
+            <span>Click marker for full CWC audit</span>
             <ArrowRight className="w-3 h-3 animate-pulse" />
           </div>
         </div>
       )}
 
-      {/* Bottom Bar: Interactive Dam Selection Chips & Photorealistic Legend */}
-      <div className="absolute bottom-3 left-3 right-3 flex flex-wrap items-center justify-between gap-3 bg-[#0d1410]/95 backdrop-blur-md px-4 py-2.5 rounded-xl border border-slate-800/90 shadow-2xl">
+      {/* COMPREHENSIVE VERIFIABLE CWC NRLD DETAIL PANEL (On Dam Marker Click) */}
+      {inspectedDam && (
+        <div className="absolute top-3 right-3 bottom-16 w-full max-w-[430px] bg-[#0c140f]/95 backdrop-blur-xl border border-cyan-700/70 rounded-xl p-4 shadow-2xl z-30 flex flex-col justify-between overflow-hidden animate-in fade-in slide-in-from-right-4 duration-200">
+          {/* Top Panel Header */}
+          <div className="border-b border-slate-800 pb-2.5">
+            <div className="flex items-start justify-between gap-2">
+              <div>
+                <div className="flex items-center gap-1.5 flex-wrap">
+                  <span className="text-[9px] font-mono uppercase px-1.5 py-0.5 rounded bg-cyan-950 text-cyan-300 border border-cyan-800">
+                    {inspectedDam.state}
+                  </span>
+                  <span className="text-[9px] font-mono px-1.5 py-0.5 rounded bg-slate-900 text-slate-300 border border-slate-800">
+                    {inspectedDam.sourcing?.cwcNrldCode || 'CWC SPECIFIED'}
+                  </span>
+                  {inspectedDam.isFullySimulated && (
+                    <span className="text-[9px] font-mono px-1.5 py-0.5 rounded bg-emerald-950 text-emerald-300 border border-emerald-800">
+                      LIVE 2D TWIN
+                    </span>
+                  )}
+                </div>
+                <h3 className="font-display font-bold text-base text-white mt-1 leading-snug">
+                  {inspectedDam.name}
+                </h3>
+              </div>
+              <button
+                onClick={() => setInspectedDam(null)}
+                className="text-slate-400 hover:text-white p-1 rounded-lg hover:bg-slate-800 transition-colors cursor-pointer"
+                title="Close Detail Panel"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+
+          {/* Scrollable Dossier Content */}
+          <div className="flex-1 overflow-y-auto no-scrollbar py-2.5 space-y-3 text-xs font-mono">
+            {/* Sensitive Dual-State Alert (Mullaperiyar) */}
+            {inspectedDam.hasDualStateJurisdiction && (
+              <div className="bg-amber-950/60 border border-amber-600/80 p-2.5 rounded-lg text-amber-200 space-y-1">
+                <div className="flex items-center gap-1.5 font-bold text-[11px] text-amber-300">
+                  <AlertTriangle className="w-4 h-4 text-amber-400 shrink-0" />
+                  <span>CRITICAL DUAL-STATE JURISDICTION</span>
+                </div>
+                <p className="text-[10px] leading-relaxed text-amber-100">
+                  {inspectedDam.dualStateDetails}
+                </p>
+              </div>
+            )}
+
+            {/* Geographical & Administrative Identity */}
+            <div className="space-y-1.5 bg-slate-950/60 p-2.5 rounded-lg border border-slate-800/80 text-[11px]">
+              <div className="flex justify-between">
+                <span className="text-slate-400">River &amp; Basin:</span>
+                <span className="text-cyan-300 font-semibold text-right">{inspectedDam.river}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-slate-400">Nearest City:</span>
+                <span className="text-slate-200 text-right">{inspectedDam.nearestCity}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-slate-400">Coordinates:</span>
+                <span className="text-slate-300 text-right">
+                  {inspectedDam.coordinates[0]}° N, {inspectedDam.coordinates[1]}° E
+                </span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-slate-400">Dam Type:</span>
+                <span className="text-slate-200 text-right truncate max-w-[220px]" title={inspectedDam.damType}>
+                  {inspectedDam.damType}
+                </span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-slate-400">Year Completed:</span>
+                <span className="text-slate-200">{inspectedDam.builtYear}</span>
+              </div>
+            </div>
+
+            {/* Technical Specifications Matrix */}
+            <div className="grid grid-cols-2 gap-2 text-xs">
+              <div className="bg-slate-950/70 p-2 rounded-lg border border-slate-800">
+                <span className="text-slate-500 block text-[9px]">STRUCTURAL HEIGHT</span>
+                <span className="text-white font-bold">{inspectedDam.heightM} m</span>
+              </div>
+              <div className="bg-slate-950/70 p-2 rounded-lg border border-slate-800">
+                <span className="text-slate-500 block text-[9px]">CREST LENGTH</span>
+                <span className="text-cyan-400 font-bold">{inspectedDam.lengthM.toLocaleString()} m</span>
+              </div>
+              <div className="bg-slate-950/70 p-2 rounded-lg border border-slate-800">
+                <span className="text-slate-500 block text-[9px]">GROSS STORAGE</span>
+                <span className="text-amber-400 font-bold">{inspectedDam.grossStorageTmc} TMC</span>
+                <span className="text-slate-400 block text-[8.5px]">({inspectedDam.grossStorageMcm} MCM)</span>
+              </div>
+              <div className="bg-slate-950/70 p-2 rounded-lg border border-slate-800">
+                <span className="text-slate-500 block text-[9px]">CATCHMENT AREA</span>
+                <span className="text-white font-bold">{inspectedDam.catchmentAreaKm2.toLocaleString()} km²</span>
+              </div>
+            </div>
+
+            {/* Primary Purposes */}
+            <div className="space-y-1">
+              <span className="text-[10px] text-slate-400 uppercase tracking-wider block">
+                Primary Purposes:
+              </span>
+              <div className="flex flex-wrap gap-1">
+                {inspectedDam.primaryPurpose?.map((p) => (
+                  <span
+                    key={p}
+                    className="text-[10px] px-2 py-0.5 rounded bg-cyan-950/60 border border-cyan-800/60 text-cyan-300"
+                  >
+                    {p}
+                  </span>
+                ))}
+              </div>
+            </div>
+
+            {/* Downstream Impact & Vulnerable Districts */}
+            <div className="bg-slate-950/70 p-2.5 rounded-lg border border-slate-800 space-y-1 text-[10.5px]">
+              <div className="flex items-center justify-between text-slate-300 font-semibold border-b border-slate-800/80 pb-1">
+                <span className="flex items-center gap-1.5">
+                  <Activity className="w-3.5 h-3.5 text-red-400" />
+                  Downstream Risk Context
+                </span>
+                <span className="text-amber-400 text-[10px]">
+                  Pop: {inspectedDam.downstreamContext?.estimatedVulnerablePop}
+                </span>
+              </div>
+              <div className="text-slate-300 pt-0.5">
+                <span className="text-slate-500">Districts: </span>
+                {inspectedDam.downstreamContext?.districts?.join(', ')}
+              </div>
+              <div className="text-slate-300">
+                <span className="text-slate-500">Key Reach: </span>
+                {inspectedDam.downstreamContext?.keySettlements?.slice(0, 4).join(' → ')}
+              </div>
+            </div>
+
+            {/* Auditable Data Notes & CWC Source Registry Box */}
+            <div className="bg-[#121f17] border border-cyan-800/50 p-2.5 rounded-lg space-y-1 text-[10px]">
+              <div className="flex items-center justify-between text-cyan-400 font-bold border-b border-cyan-900/60 pb-1">
+                <span className="flex items-center gap-1">
+                  <ShieldCheck className="w-3.5 h-3.5" />
+                  CWC Registry &amp; Audit Notes
+                </span>
+                <span className="text-[9px] text-slate-400">
+                  {inspectedDam.sourcing?.cwcNrldCode}
+                </span>
+              </div>
+              <p className="text-slate-300 leading-relaxed font-sans text-[10.5px]">
+                {inspectedDam.dataNotes}
+              </p>
+              <div className="text-[9px] text-slate-400 font-mono pt-1">
+                Source: {inspectedDam.sourcing?.reference}
+              </div>
+            </div>
+          </div>
+
+          {/* Action Footer */}
+          <div className="pt-2.5 border-t border-slate-800 flex items-center justify-between gap-2">
+            <button
+              onClick={() => {
+                onSelectDam(inspectedDam);
+              }}
+              className="px-3 py-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-700 text-xs font-mono text-cyan-300 transition-all cursor-pointer"
+            >
+              Select Basin
+            </button>
+
+            {inspectedDam.isFullySimulated ? (
+              <button
+                onClick={onProceedToBreach}
+                className="btn btn-primary text-xs px-3.5 py-1.5 font-semibold shadow-lg shadow-cyan-600/25 flex items-center gap-1.5 cursor-pointer whitespace-nowrap"
+              >
+                <span>Launch 2D Simulation</span>
+                <ArrowRight className="w-3.5 h-3.5" />
+              </button>
+            ) : (
+              <span className="text-[10px] font-mono text-emerald-400 bg-emerald-950/60 border border-emerald-800/80 px-2 py-1 rounded">
+                Telemetry Verified [SIH PS161]
+              </span>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Bottom Bar: Interactive Dam Selection Chips (Filtered by State) */}
+      <div className="absolute bottom-3 left-3 right-3 flex flex-wrap items-center justify-between gap-2.5 bg-[#0d1410]/95 backdrop-blur-md px-3.5 py-2 rounded-xl border border-slate-800/90 shadow-2xl z-10">
         {/* Dam Quick-Select Chips */}
-        <div className="flex items-center gap-2 overflow-x-auto no-scrollbar">
-          <span className="text-[11px] font-mono text-slate-400 uppercase hidden sm:inline">
-            SELECT DAM:
+        <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar max-w-[820px]">
+          <span className="text-[10px] font-mono text-slate-400 uppercase hidden md:inline shrink-0">
+            {activeStateFilter === 'ALL' ? 'DAMS (20):' : `${activeStateFilter.toUpperCase()}:`}
           </span>
-          {indiaGeo.damsMarkers.map((dam) => {
+          {filteredDams.map((dam) => {
             const isSelected = selectedDam?.id === dam.id;
             return (
               <button
                 key={dam.id}
                 onClick={() => handleZoomDam(dam)}
-                className={`px-3 py-1.5 rounded-lg text-xs font-mono font-medium transition-all flex items-center gap-1.5 whitespace-nowrap cursor-pointer ${
+                className={`px-2.5 py-1 rounded-lg text-[11px] font-mono font-medium transition-all flex items-center gap-1.5 whitespace-nowrap cursor-pointer ${
                   isSelected
                     ? 'bg-cyan-500 text-slate-950 font-bold shadow-lg shadow-cyan-500/30'
                     : 'bg-slate-900/80 text-slate-300 hover:text-white hover:bg-slate-800 border border-slate-800'
                 }`}
               >
                 <span 
-                  className={`w-2 h-2 rounded-full ${isSelected ? 'bg-slate-950' : 'bg-cyan-400'}`} 
+                  className={`w-1.5 h-1.5 rounded-full ${isSelected ? 'bg-slate-950' : 'bg-cyan-400'}`} 
                 />
                 <span>{dam.name.split(' ')[0]}</span>
+                <span className="text-[9px] opacity-75">({dam.grossStorageTmc}T)</span>
               </button>
             );
           })}
         </div>
 
-        {/* Legend & Action Button */}
-        <div className="flex items-center gap-3">
-          <div className="text-[10px] font-mono text-slate-400 hidden xl:flex items-center gap-3">
-            <span className="flex items-center gap-1">
-              <span className="w-2.5 h-1 bg-[#0f2922] border border-slate-600 inline-block" /> Natural Riverbed
-            </span>
-            <span className="flex items-center gap-1">
-              <span className="w-2.5 h-1 bg-cyan-400 inline-block" /> Active Surge Reach
-            </span>
-            <span className="flex items-center gap-1">
-              <span className="w-2 h-2 rounded-full bg-cyan-400 inline-block" /> Dam Beacon
-            </span>
-          </div>
-
+        {/* Action Button */}
+        <div className="flex items-center gap-2">
           <button
             onClick={onProceedToBreach}
-            className="btn btn-primary text-xs font-semibold px-4 py-2 shadow-lg shadow-cyan-600/20 flex items-center gap-1.5"
+            className="btn btn-primary text-xs font-semibold px-3 py-1.5 shadow-lg shadow-cyan-600/20 flex items-center gap-1.5 whitespace-nowrap"
           >
             <span>Proceed to Breach Scenario</span>
             <ArrowRight className="w-3.5 h-3.5" />
