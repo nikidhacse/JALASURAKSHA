@@ -1,30 +1,19 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   Radio, 
-  Volume2, 
-  VolumeX, 
-  FileText, 
   ShieldAlert, 
-  Activity, 
-  Gauge, 
   Clock, 
-  Compass, 
-  Layers, 
   Cpu, 
-  AlertTriangle,
-  Waves
+  Activity,
+  CheckCircle2
 } from 'lucide-react';
 
 export default function StatusTickerBar({
   selectedDam,
   simMinute = 38,
-  solverType = 'delft3d',
-  onExportReport
+  solverType = 'delft3d'
 }) {
-  const [sirenActive, setSirenActive] = useState(false);
   const [istTime, setIstTime] = useState('');
-  const audioCtxRef = useRef(null);
-  const oscRef = useRef(null);
 
   // Live IST Clock
   useEffect(() => {
@@ -37,56 +26,14 @@ export default function StatusTickerBar({
     return () => clearInterval(interval);
   }, []);
 
-  // Web Audio Air Raid / Disaster Siren Generator
-  const toggleSiren = () => {
-    if (sirenActive) {
-      if (audioCtxRef.current) {
-        audioCtxRef.current.close();
-        audioCtxRef.current = null;
-      }
-      setSirenActive(false);
-    } else {
-      try {
-        const AudioContext = window.AudioContext || window.webkitAudioContext;
-        const ctx = new AudioContext();
-        audioCtxRef.current = ctx;
-
-        const osc = ctx.createOscillator();
-        const gainNode = ctx.createGain();
-
-        osc.type = 'sawtooth';
-        osc.frequency.setValueAtTime(450, ctx.currentTime);
-
-        const lfo = ctx.createOscillator();
-        const lfoGain = ctx.createGain();
-        lfo.type = 'sine';
-        lfo.frequency.setValueAtTime(0.35, ctx.currentTime);
-        lfoGain.gain.setValueAtTime(260, ctx.currentTime);
-
-        lfo.connect(osc.frequency);
-        osc.connect(gainNode);
-        gainNode.connect(ctx.destination);
-
-        gainNode.gain.setValueAtTime(0.12, ctx.currentTime);
-
-        osc.start();
-        lfo.start();
-        oscRef.current = osc;
-        setSirenActive(true);
-      } catch (err) {
-        console.error('Audio Context Error:', err);
-      }
-    }
-  };
-
   // Determine threat severity based on simulation timeline
   const isEmergency = simMinute > 0 && simMinute <= 60;
 
   return (
-    <div className="w-full bg-[#0d1410] border-b border-slate-800 px-4 py-1.5 shadow-md">
+    <div className="w-full bg-[#0a110d] border-b border-slate-800/80 px-4 py-1.5 shadow-md">
       <div className="max-w-[1720px] mx-auto flex flex-wrap items-center justify-between gap-3 text-xs font-mono">
         {/* Left Telemetry Group */}
-        <div className="flex items-center flex-wrap gap-3">
+        <div className="flex items-center flex-wrap gap-2.5">
           {/* Live System Indicator */}
           <div className="flex items-center gap-2 px-2.5 py-1 rounded bg-slate-900/90 border border-slate-800 text-[11px]">
             <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
@@ -130,41 +77,24 @@ export default function StatusTickerBar({
 
         {/* Right Action & Threat Group */}
         <div className="flex items-center gap-3">
+          {/* Real-time sync status */}
+          <div className="hidden lg:flex items-center gap-1.5 text-[10px] text-slate-400">
+            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
+            <span>FEEDS SYNCED</span>
+          </div>
+
           {/* Threat Defense Tag */}
           <div className="flex items-center gap-2 px-2.5 py-1 rounded bg-amber-950/40 border border-amber-800/60 text-[11px] text-amber-300">
             <ShieldAlert className="w-3.5 h-3.5 text-amber-400" />
             <span className="hidden sm:inline text-slate-400">DEFENSE LEVEL:</span>
-            <span className="font-bold">ALERT ORANGE // HYDRO RISK</span>
+            <span className="font-bold">ALERT ORANGE</span>
           </div>
 
           {/* Real-time IST Clock */}
-          <div className="hidden md:flex items-center gap-1.5 px-2.5 py-1 rounded bg-slate-900/90 border border-slate-800 text-[11px] text-slate-300">
+          <div className="flex items-center gap-1.5 px-2.5 py-1 rounded bg-slate-900/90 border border-slate-800 text-[11px] text-slate-300">
             <Radio className="w-3.5 h-3.5 text-cyan-400 animate-pulse" />
             <span className="text-cyan-400 font-semibold">{istTime}</span>
           </div>
-
-          {/* Quick Siren Toggle */}
-          <button
-            onClick={toggleSiren}
-            title={sirenActive ? "Deactivate Siren" : "Activate Emergency Flood Siren"}
-            className={`flex items-center gap-1.5 px-2.5 py-1 rounded text-[11px] font-semibold border transition-all cursor-pointer ${
-              sirenActive
-                ? 'bg-red-600 text-white border-red-500 shadow-lg shadow-red-600/50 animate-pulse'
-                : 'bg-slate-900 text-slate-300 border-slate-800 hover:border-red-900 hover:text-red-400'
-            }`}
-          >
-            {sirenActive ? <VolumeX className="w-3.5 h-3.5" /> : <Volume2 className="w-3.5 h-3.5 text-red-400" />}
-            <span>{sirenActive ? 'SIREN ON' : 'SIREN'}</span>
-          </button>
-
-          {/* Military SITREP Download */}
-          <button
-            onClick={onExportReport}
-            className="flex items-center gap-1.5 px-3 py-1 rounded text-[11px] font-semibold bg-gradient-to-r from-cyan-600 to-purple-700 hover:from-cyan-500 hover:to-purple-600 text-slate-100 shadow-md shadow-cyan-900/25 transition-all cursor-pointer"
-          >
-            <FileText className="w-3.5 h-3.5" />
-            <span className="hidden sm:inline">HADR SITREP</span>
-          </button>
         </div>
       </div>
     </div>

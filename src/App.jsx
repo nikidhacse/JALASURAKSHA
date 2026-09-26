@@ -151,7 +151,6 @@ export default function App() {
         selectedDam={selectedDam}
         simMinute={simMinute}
         solverType={solverType}
-        onExportReport={handleExportReport}
       />
 
       {/* Main Screen View Router with Smooth Fade & Slide Transition */}

@@ -116,27 +116,15 @@ export default function Header({
           </div>
         </div>
 
-        {/* Center telemetry: Active dam & basin */}
-        <div className="hidden lg:flex items-center gap-4 bg-slate-900/90 border border-slate-800 px-3.5 py-1.5 rounded-lg text-xs font-mono">
-          <div className="flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-            <span className="text-slate-400">ACTIVE BASIN:</span>
-            <span className="text-cyan-300 font-semibold">{selectedDam.river}</span>
-          </div>
-          <div className="h-4 w-[1px] bg-slate-800" />
-          <div className="flex items-center gap-2">
-            <span className="text-slate-400">DAM:</span>
-            <span className="text-slate-100 font-semibold">{selectedDam.name}</span>
-          </div>
-          <div className="h-4 w-[1px] bg-slate-800" />
-          <div className="flex items-center gap-2">
-            <Radio className="w-3.5 h-3.5 text-red-400 animate-spin" />
-            <span className="text-red-400 font-semibold">{currentTimeStr}</span>
-          </div>
+        {/* Center: System Mission Tag */}
+        <div className="hidden xl:flex items-center gap-2 bg-slate-900/60 border border-slate-800/80 px-3 py-1 rounded-full text-[11px] font-mono text-slate-300">
+          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+          <span className="text-slate-400">MISSION:</span>
+          <span className="text-cyan-300 font-medium">HYDRODYNAMIC FLOOD INUNDATION &amp; EVACUATION INTELLIGENCE</span>
         </div>
 
         {/* Action Controls */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2.5">
           {/* Siren sound alert toggle */}
           <button
             onClick={toggleSiren}
