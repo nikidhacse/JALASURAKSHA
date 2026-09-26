@@ -13,7 +13,7 @@ const Screen05ValidationReport = lazy(() => import('./components/Screen05Validat
 function HUDSkeletonLoader({ label }) {
   return (
     <div className="max-w-[1720px] mx-auto px-4 py-16 flex flex-col items-center justify-center min-h-[540px] space-y-6">
-      <div className="relative w-80 h-48 rounded-2xl border border-cyan-800/60 bg-[#081020]/90 p-5 overflow-hidden shadow-2xl flex flex-col justify-between">
+      <div className="relative w-80 h-48 rounded-2xl border border-cyan-800/60 bg-[#101912]/90 p-5 overflow-hidden shadow-2xl flex flex-col justify-between">
         <div className="hud-scanline" />
         
         <div className="flex items-center justify-between text-[11px] font-mono border-b border-slate-800/80 pb-2">
@@ -216,7 +216,7 @@ export default function App() {
       </main>
 
       {/* Military Command Center Footer */}
-      <footer className="w-full bg-[#05080f] border-t border-slate-800/80 py-4 px-6 text-xs text-slate-400">
+      <footer className="w-full bg-[#0a110c] border-t border-slate-800/80 py-4 px-6 text-xs text-slate-400">
         <div className="max-w-[1720px] mx-auto flex flex-col sm:flex-row items-center justify-between gap-3">
           <div className="flex items-center gap-2">
             <span className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse" />

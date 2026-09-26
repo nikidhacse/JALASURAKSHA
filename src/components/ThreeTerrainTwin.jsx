@@ -113,12 +113,12 @@ export default function ThreeTerrainTwin({
     scene.add(terrainMesh);
     terrainMeshRef.current = terrainMesh;
 
-    // Cyan wireframe contour overlay
+    // Muted reservoir teal wireframe contour overlay
     const wireMat = new THREE.MeshBasicMaterial({
-      color: 0x0ea5e9,
+      color: 0x4a9d7f,
       wireframe: true,
       transparent: true,
-      opacity: 0.09
+      opacity: 0.08
     });
     const wireMesh = new THREE.Mesh(terrainGeo, wireMat);
     wireMesh.position.y += 0.4;
@@ -127,9 +127,9 @@ export default function ThreeTerrainTwin({
     // 4. Dam Barrier Structure
     const damGeo = new THREE.BoxGeometry(160, 48, 25);
     const damMat = new THREE.MeshStandardMaterial({
-      color: 0x334155,
-      roughness: 0.7,
-      metalness: 0.25
+      color: 0x24352b,
+      roughness: 0.75,
+      metalness: 0.2
     });
     const damMesh = new THREE.Mesh(damGeo, damMat);
     damMesh.position.set(0, 42, 110);
@@ -141,14 +141,14 @@ export default function ThreeTerrainTwin({
     const breachWidth3D = Math.min(90, Math.max(20, breachWidth * 0.25));
     const breachGeo = new THREE.BoxGeometry(breachWidth3D, 50, 27);
     const breachMat = new THREE.MeshStandardMaterial({
-      color: 0x090f1d,
+      color: 0x0a140e,
       roughness: 0.95
     });
     const breachMesh = new THREE.Mesh(breachGeo, breachMat);
     breachMesh.position.set(0, 42, 110);
     scene.add(breachMesh);
 
-    // 5. Dynamic Water Flood Surface with Fresnel / Reflective Shader
+    // 5. Dynamic Water Flood Surface with Fresnel / Reflective Shader (Earthy Reservoir Palette)
     const waterGeo = new THREE.PlaneGeometry(terrainWidth, terrainHeight, gridW - 1, gridH - 1);
     waterGeo.rotateX(-Math.PI / 2);
 
@@ -166,17 +166,17 @@ export default function ThreeTerrainTwin({
     waterGeo.computeVertexNormals();
     waterGeoRef.current = waterGeo;
 
-    // Custom Fresnel & Reflective Water Shader
+    // Custom Fresnel & Reflective Water Shader (Reservoir Water Teal-Green)
     const waterShader = {
       uniforms: {
         uTime: { value: 0.0 },
         uSunDir: { value: new THREE.Vector3(0.4, 0.8, 0.3).normalize() },
-        uSunColor: { value: new THREE.Color(0x38bdf8) },
-        uSkyColor: { value: new THREE.Color(0x7dd3fc) },
-        uDeepWaterColor: { value: new THREE.Color(0x021b4a) },
-        uMidWaterColor: { value: new THREE.Color(0x0284c7) },
-        uShallowWaterColor: { value: new THREE.Color(0x06b6d4) },
-        uFoamColor: { value: new THREE.Color(0xf0fdf4) }
+        uSunColor: { value: new THREE.Color(0xd7eee1) },
+        uSkyColor: { value: new THREE.Color(0x8ecbb4) },
+        uDeepWaterColor: { value: new THREE.Color(0x0c2720) },
+        uMidWaterColor: { value: new THREE.Color(0x215c4d) },
+        uShallowWaterColor: { value: new THREE.Color(0x4a9d7f) },
+        uFoamColor: { value: new THREE.Color(0xf2faf5) }
       },
       vertexShader: `
         attribute float aDepth;
@@ -473,7 +473,7 @@ export default function ThreeTerrainTwin({
   }, [rasterData]);
 
   return (
-    <div className="w-full h-full relative overflow-hidden rounded-xl border border-slate-800 bg-[#060b14] shadow-2xl">
+    <div className="w-full h-full relative overflow-hidden rounded-xl border border-slate-800 bg-[#0d1410] shadow-2xl">
       <div ref={mountRef} style={{ width: '100%', height: '460px', minHeight: '440px' }} className="w-full h-[460px] cursor-grab active:cursor-grabbing" />
 
       {/* 3D Overlays */}
@@ -487,7 +487,7 @@ export default function ThreeTerrainTwin({
       </div>
 
       <div className="absolute bottom-3 left-3 bg-slate-950/85 backdrop-blur-md px-3.5 py-2 rounded-lg border border-slate-800 text-[10px] font-mono text-slate-300 flex items-center gap-4 shadow-lg flex-wrap">
-        <span>Dam: <b className="text-white">{dam.name.split(' ')[0]}</b></span>
+        <span>Dam: <b className="text-slate-100">{dam.name.split(' ')[0]}</b></span>
         <span>Timeline: <b className="text-cyan-400">T+{rasterData?.timestep_min ?? simulationState?.currentSimMinute ?? 0}m</b></span>
         <span>Max Depth: <b className="text-cyan-300">{rasterData?.max_depth_m ?? 0.0}m</b></span>
         <span>Peak Vel: <b className="text-amber-400">{rasterData?.max_velocity_ms ?? 0.0}m/s</b></span>

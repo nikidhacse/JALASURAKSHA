@@ -87,20 +87,20 @@ export default function Header({
   ];
 
   return (
-    <header className="w-full bg-[#0a101d] border-b border-cyan-950/60 sticky top-0 z-50 shadow-2xl backdrop-blur-md">
+    <header className="w-full bg-[#0d1410] border-b border-slate-800/80 sticky top-0 z-50 shadow-2xl backdrop-blur-md">
       {/* Top Banner Bar */}
       <div className="max-w-[1720px] mx-auto px-4 py-2.5 flex flex-wrap items-center justify-between gap-4">
         {/* Brand identity */}
         <div className="flex items-center gap-3">
-          <div className="relative flex items-center justify-center w-10 h-10 rounded-xl bg-gradient-to-tr from-cyan-600 to-blue-600 shadow-lg shadow-cyan-500/25">
-            <Waves className="w-6 h-6 text-white" />
+          <div className="relative flex items-center justify-center w-10 h-10 rounded-xl bg-gradient-to-tr from-cyan-600 to-purple-700 shadow-lg shadow-cyan-600/20">
+            <Waves className="w-6 h-6 text-slate-100" />
             <div className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full animate-ping" />
             <div className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full" />
           </div>
 
           <div>
             <div className="flex items-center gap-2">
-              <span className="font-display font-bold text-xl text-white tracking-wider flex items-center gap-1.5">
+              <span className="font-display font-bold text-xl text-slate-100 tracking-wider flex items-center gap-1.5">
                 JALASURAKSHA
                 <span className="text-[10px] uppercase font-mono px-1.5 py-0.5 rounded bg-cyan-950 text-cyan-400 border border-cyan-800">
                   v2.6
@@ -110,7 +110,7 @@ export default function Header({
                 <AlertTriangle className="w-3 h-3 mr-1 inline" /> PS161 / SIH26161 (NTRO)
               </span>
             </div>
-            <p className="text-[11px] text-cyan-400/80 font-medium hidden sm:block">
+            <p className="text-[11px] text-cyan-400/90 font-medium hidden sm:block">
               "Don't just simulate where the water goes. Simulate what happens next."
             </p>
           </div>
@@ -126,7 +126,7 @@ export default function Header({
           <div className="h-4 w-[1px] bg-slate-800" />
           <div className="flex items-center gap-2">
             <span className="text-slate-400">DAM:</span>
-            <span className="text-white font-semibold">{selectedDam.name}</span>
+            <span className="text-slate-100 font-semibold">{selectedDam.name}</span>
           </div>
           <div className="h-4 w-[1px] bg-slate-800" />
           <div className="flex items-center gap-2">
@@ -154,7 +154,7 @@ export default function Header({
           {/* Quick HADR SITREP Export */}
           <button
             onClick={onExportReport}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white shadow-md shadow-cyan-600/30 transition-all cursor-pointer"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-gradient-to-r from-cyan-600 to-purple-700 hover:from-cyan-500 hover:to-purple-600 text-slate-100 shadow-md shadow-cyan-900/30 transition-all cursor-pointer"
           >
             <FileText className="w-4 h-4" />
             <span>HADR SITREP</span>
@@ -163,7 +163,7 @@ export default function Header({
       </div>
 
       {/* Main Tab Navigation */}
-      <nav className="max-w-[1720px] mx-auto px-4 flex items-center gap-1 overflow-x-auto no-scrollbar border-t border-slate-800/60 bg-[#080d18]">
+      <nav className="max-w-[1720px] mx-auto px-4 flex items-center gap-1 overflow-x-auto no-scrollbar border-t border-slate-800/60 bg-[#0d1410]/95">
         {navItems.map((item) => {
           const Icon = item.icon;
           const isActive = activeTab === item.id;
@@ -173,7 +173,7 @@ export default function Header({
               onClick={() => setActiveTab(item.id)}
               className={`flex items-center gap-2 px-4 py-2.5 text-xs font-semibold whitespace-nowrap transition-all border-b-2 cursor-pointer ${
                 isActive
-                  ? 'border-cyan-400 text-cyan-300 bg-cyan-950/30 shadow-[inset_0_-2px_8px_rgba(6,182,212,0.2)]'
+                  ? 'border-cyan-400 text-cyan-300 bg-cyan-950/40 shadow-[inset_0_-2px_8px_rgba(74,157,127,0.25)]'
                   : 'border-transparent text-slate-400 hover:text-slate-200 hover:bg-slate-900/50'
               }`}
             >

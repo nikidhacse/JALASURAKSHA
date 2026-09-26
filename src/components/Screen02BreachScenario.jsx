@@ -204,7 +204,7 @@ export default function Screen02BreachScenario({
   return (
     <div className="max-w-[1720px] mx-auto px-4 py-6 space-y-6">
       {/* Header Banner */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-5 rounded-xl bg-gradient-to-r from-slate-900/90 via-[#0e1a30] to-slate-900/90 border border-cyan-900/40 shadow-xl">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-5 rounded-xl bg-gradient-to-r from-slate-900/90 via-[#121f17] to-slate-900/90 border border-cyan-900/40 shadow-xl">
         <div className="space-y-1">
           <div className="flex items-center gap-2">
             <span className="badge badge-amber">MODULE 02 // BREACH DYNAMICS</span>
@@ -212,7 +212,7 @@ export default function Screen02BreachScenario({
               <Server className="w-3 h-3" /> FASTAPI BACKEND CONNECTED
             </span>
           </div>
-          <h1 className="text-2xl md:text-3xl font-display font-bold text-white tracking-tight">
+          <h1 className="text-2xl md:text-3xl font-display font-bold text-slate-100 tracking-tight">
             Dam Breach Scenario & Hydrodynamic Solver Setup
           </h1>
           <p className="text-sm text-slate-400 max-w-3xl">
@@ -223,7 +223,7 @@ export default function Screen02BreachScenario({
         <button
           onClick={handleRunSimulation}
           disabled={isSimulating}
-          className="btn btn-primary text-sm font-semibold px-6 py-3 shadow-lg shadow-cyan-500/30 flex items-center gap-2 cursor-pointer disabled:opacity-50"
+          className="btn btn-primary text-sm font-semibold px-6 py-3 shadow-lg shadow-cyan-600/30 flex items-center gap-2 cursor-pointer disabled:opacity-50"
         >
           {isSimulating ? (
             <>
@@ -243,13 +243,13 @@ export default function Screen02BreachScenario({
       {/* Real Backend Polling Progress Modal Overlay */}
       {isSimulating && (
         <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
-          <div className="bg-[#0b1322] border border-cyan-500/60 p-6 rounded-2xl max-w-lg w-full shadow-2xl space-y-4">
+          <div className="bg-[#101912] border border-cyan-500/60 p-6 rounded-2xl max-w-lg w-full shadow-2xl space-y-4">
             <div className="flex items-center gap-3">
               <div className="p-2.5 rounded-xl bg-cyan-950 border border-cyan-800 text-cyan-400">
                 <Loader2 className="w-6 h-6 animate-spin" />
               </div>
               <div>
-                <h3 className="font-display font-bold text-white text-base">
+                <h3 className="font-display font-bold text-slate-100 text-base">
                   Executing Backend Hydrodynamic Simulation
                 </h3>
                 <p className="text-xs text-slate-400 font-mono">

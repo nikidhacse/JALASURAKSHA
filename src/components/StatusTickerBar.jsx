@@ -83,7 +83,7 @@ export default function StatusTickerBar({
   const isEmergency = simMinute > 0 && simMinute <= 60;
 
   return (
-    <div className="w-full bg-[#070d18] border-b border-cyan-950/80 px-4 py-1.5 shadow-md">
+    <div className="w-full bg-[#0d1410] border-b border-slate-800 px-4 py-1.5 shadow-md">
       <div className="max-w-[1720px] mx-auto flex flex-wrap items-center justify-between gap-3 text-xs font-mono">
         {/* Left Telemetry Group */}
         <div className="flex items-center flex-wrap gap-3">
@@ -95,11 +95,11 @@ export default function StatusTickerBar({
           </div>
 
           {/* Active Basin & Dam */}
-          <div className="flex items-center gap-2 px-2.5 py-1 rounded bg-[#0a1426] border border-cyan-900/60 text-[11px]">
+          <div className="flex items-center gap-2 px-2.5 py-1 rounded bg-[#131f18] border border-cyan-800/50 text-[11px]">
             <span className="text-slate-400">BASIN:</span>
             <span className="text-cyan-300 font-semibold">{selectedDam?.river?.split('(')[0] || 'Cauvery'}</span>
             <span className="text-slate-600">/</span>
-            <span className="text-white font-bold">{selectedDam?.name || 'Bhavanisagar Dam'}</span>
+            <span className="text-slate-100 font-bold">{selectedDam?.name || 'Bhavanisagar Dam'}</span>
             <span className="text-[10px] text-amber-400 font-mono">({selectedDam?.storageCapacityMm3} Mm³)</span>
           </div>
 
@@ -111,7 +111,7 @@ export default function StatusTickerBar({
           }`}>
             <Clock className={`w-3.5 h-3.5 ${isEmergency ? 'text-red-400 animate-spin' : 'text-slate-400'}`} />
             <span className="text-slate-400">SIM TIMELINE:</span>
-            <span className="font-bold text-white">T+{simMinute || 0} MIN</span>
+            <span className="font-bold text-slate-100">T+{simMinute || 0} MIN</span>
             <span className="text-[10px] uppercase text-cyan-400">
               {simMinute <= 0 ? 'PRE-BREACH' : simMinute < 30 ? 'BORE WAVE SURGE' : 'PROPAGATING'}
             </span>
@@ -160,7 +160,7 @@ export default function StatusTickerBar({
           {/* Military SITREP Download */}
           <button
             onClick={onExportReport}
-            className="flex items-center gap-1.5 px-3 py-1 rounded text-[11px] font-semibold bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white shadow-md shadow-cyan-600/25 transition-all cursor-pointer"
+            className="flex items-center gap-1.5 px-3 py-1 rounded text-[11px] font-semibold bg-gradient-to-r from-cyan-600 to-purple-700 hover:from-cyan-500 hover:to-purple-600 text-slate-100 shadow-md shadow-cyan-900/25 transition-all cursor-pointer"
           >
             <FileText className="w-3.5 h-3.5" />
             <span className="hidden sm:inline">HADR SITREP</span>

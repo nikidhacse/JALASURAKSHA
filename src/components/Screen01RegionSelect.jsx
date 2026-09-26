@@ -39,7 +39,7 @@ export default function Screen01RegionSelect({
   return (
     <div className="max-w-[1720px] mx-auto px-4 py-6 space-y-6">
       {/* Screen Intro & Specification Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-5 rounded-2xl bg-gradient-to-r from-slate-900/95 via-[#0c1628] to-slate-900/95 border border-cyan-900/50 shadow-2xl">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-5 rounded-2xl bg-gradient-to-r from-slate-900/95 via-[#121f17] to-slate-900/95 border border-cyan-900/50 shadow-2xl">
         <div className="space-y-1.5">
           <div className="flex items-center gap-2 flex-wrap">
             <span className="badge badge-cyan">NTRO // PS161 SPECIFICATION</span>
@@ -48,7 +48,7 @@ export default function Screen01RegionSelect({
               3D DIGITAL TWIN TERRAIN RELIEF
             </span>
           </div>
-          <h1 className="text-2xl md:text-3xl font-display font-bold text-white tracking-tight flex items-center gap-2">
+          <h1 className="text-2xl md:text-3xl font-display font-bold text-slate-100 tracking-tight flex items-center gap-2">
             <span>Hydro-Geographic Basin &amp; Dam Selection</span>
             <span className="text-sm font-normal text-cyan-400 font-mono">
               [STEP 01/05]
@@ -118,7 +118,7 @@ export default function Screen01RegionSelect({
                 onClick={() => setSelectedDam(dam)}
                 className={`glass-panel cursor-pointer p-3.5 transition-all duration-200 relative overflow-hidden flex flex-col justify-between group ${
                   isSelected
-                    ? 'border-cyan-400 ring-2 ring-cyan-500/40 bg-[#0e1930] shadow-xl shadow-cyan-950/40'
+                    ? 'border-cyan-400 ring-2 ring-cyan-500/40 bg-[#131f18] shadow-xl shadow-slate-950/60'
                     : 'hover:border-slate-600 bg-slate-900/60 hover:bg-slate-900/80'
                 }`}
               >
@@ -304,20 +304,20 @@ export default function Screen01RegionSelect({
               <svg className="w-full h-full" viewBox="0 0 700 200" preserveAspectRatio="none">
                 <defs>
                   <linearGradient id="demGradient" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#0284c7" stopOpacity="0.4" />
-                    <stop offset="100%" stopColor="#0f172a" stopOpacity="0.05" />
+                    <stop offset="0%" stopColor="#37735f" stopOpacity="0.4" />
+                    <stop offset="100%" stopColor="#0d1410" stopOpacity="0.05" />
                   </linearGradient>
                   <linearGradient id="riverBedGradient" x1="0" y1="0" x2="1" y2="0">
-                    <stop offset="0%" stopColor="#38bdf8" />
-                    <stop offset="100%" stopColor="#06b6d4" />
+                    <stop offset="0%" stopColor="#6bbf9e" />
+                    <stop offset="100%" stopColor="#4a9d7f" />
                   </linearGradient>
                 </defs>
 
                 {/* Grid Lines */}
-                <line x1="50" y1="30" x2="680" y2="30" stroke="#1e293b" strokeDasharray="3,3" />
-                <line x1="50" y1="80" x2="680" y2="80" stroke="#1e293b" strokeDasharray="3,3" />
-                <line x1="50" y1="130" x2="680" y2="130" stroke="#1e293b" strokeDasharray="3,3" />
-                <line x1="50" y1="170" x2="680" y2="170" stroke="#334155" />
+                <line x1="50" y1="30" x2="680" y2="30" stroke="#1d2c23" strokeDasharray="3,3" />
+                <line x1="50" y1="80" x2="680" y2="80" stroke="#1d2c23" strokeDasharray="3,3" />
+                <line x1="50" y1="130" x2="680" y2="130" stroke="#1d2c23" strokeDasharray="3,3" />
+                <line x1="50" y1="170" x2="680" y2="170" stroke="#2b3d32" />
 
                 {/* Elevation Curve Polygon */}
                 {(() => {
@@ -337,16 +337,16 @@ export default function Screen01RegionSelect({
                   return (
                     <g>
                       <path d={closedValley} fill="url(#demGradient)" />
-                      <path d={valleyPath} fill="none" stroke="#64748b" strokeWidth="2" strokeDasharray="4,2" />
+                      <path d={valleyPath} fill="none" stroke="#587361" strokeWidth="2" strokeDasharray="4,2" />
                       <path d={bedPath} fill="none" stroke="url(#riverBedGradient)" strokeWidth="3" />
 
                       {pts.map((p, idx) => (
                         <g key={idx}>
-                          <circle cx={mapX(p.km)} cy={mapY(p.riverBed)} r="4" fill="#06b6d4" stroke="#ffffff" strokeWidth="1.5" />
-                          <text x={mapX(p.km)} y={mapY(p.riverBed) - 10} fill="#f8fafc" fontSize="10" textAnchor="middle" fontFamily="sans-serif" fontWeight="bold">
+                          <circle cx={mapX(p.km)} cy={mapY(p.riverBed)} r="4" fill="#4a9d7f" stroke="#e8ede8" strokeWidth="1.5" />
+                          <text x={mapX(p.km)} y={mapY(p.riverBed) - 10} fill="#e8ede8" fontSize="10" textAnchor="middle" fontFamily="sans-serif" fontWeight="bold">
                             {p.riverBed}m
                           </text>
-                          <text x={mapX(p.km)} y="185" fill="#94a3b8" fontSize="9" textAnchor="middle" fontFamily="monospace">
+                          <text x={mapX(p.km)} y="185" fill="#8ca293" fontSize="9" textAnchor="middle" fontFamily="monospace">
                             {p.km} km
                           </text>
                         </g>

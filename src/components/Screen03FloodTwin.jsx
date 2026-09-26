@@ -175,7 +175,7 @@ export default function Screen03FloodTwin({
   return (
     <div className="max-w-[1720px] mx-auto px-4 py-6 space-y-6">
       {/* Top Banner & Telemetry Ribbon */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-4 rounded-xl bg-gradient-to-r from-slate-900/90 via-[#0a1426] to-slate-900/90 border border-cyan-900/40 shadow-xl">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-4 rounded-xl bg-gradient-to-r from-slate-900/90 via-[#121f17] to-slate-900/90 border border-cyan-900/40 shadow-xl">
         <div className="space-y-1">
           <div className="flex items-center gap-2">
             <span className="badge badge-cyan">MODULE 03 // 4D HYDRODYNAMIC PROPAGATION</span>
@@ -186,7 +186,7 @@ export default function Screen03FloodTwin({
               </span>
             )}
           </div>
-          <h1 className="text-xl md:text-2xl font-display font-bold text-white tracking-tight flex items-center gap-3">
+          <h1 className="text-xl md:text-2xl font-display font-bold text-slate-100 tracking-tight flex items-center gap-3">
             <span>Flood Wave Digital Twin</span>
             <span className="font-mono text-cyan-400 font-bold bg-slate-950 px-2.5 py-0.5 rounded border border-cyan-900 text-sm">
               {formatTime(currentStepMin)} ({currentStepMin} min)
@@ -206,8 +206,8 @@ export default function Screen03FloodTwin({
               onClick={() => setViewMode('3d')}
               className={`px-3 py-1.5 rounded-md font-semibold transition-all ${
                 viewMode === '3d'
-                  ? 'bg-cyan-600 text-white shadow-md shadow-cyan-600/30'
-                  : 'text-slate-400 hover:text-white'
+                  ? 'bg-cyan-600 text-slate-100 shadow-md shadow-cyan-900/30'
+                  : 'text-slate-400 hover:text-slate-100'
               }`}
             >
               🌊 3D WebGL Twin
@@ -216,8 +216,8 @@ export default function Screen03FloodTwin({
               onClick={() => setViewMode('2d')}
               className={`px-3 py-1.5 rounded-md font-semibold transition-all ${
                 viewMode === '2d'
-                  ? 'bg-cyan-600 text-white shadow-md shadow-cyan-600/30'
-                  : 'text-slate-400 hover:text-white'
+                  ? 'bg-cyan-600 text-slate-100 shadow-md shadow-cyan-900/30'
+                  : 'text-slate-400 hover:text-slate-100'
               }`}
             >
               🗺️ 2D GIS Map

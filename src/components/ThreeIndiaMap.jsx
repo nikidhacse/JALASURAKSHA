@@ -85,15 +85,15 @@ function createLandmarkSprite(name, isMajor = false) {
   // Subtle dot anchor
   ctx.beginPath();
   ctx.arc(24, 32, isMajor ? 5 : 3.5, 0, Math.PI * 2);
-  ctx.fillStyle = isMajor ? '#38bdf8' : '#94a3b8';
+  ctx.fillStyle = isMajor ? '#6bbf9e' : '#8ca293';
   ctx.fill();
   ctx.lineWidth = 1.5;
-  ctx.strokeStyle = '#ffffff';
+  ctx.strokeStyle = '#e8ede8';
   ctx.stroke();
 
   // Monospace cartographic label
   ctx.font = isMajor ? 'bold 22px monospace' : '500 18px monospace';
-  ctx.fillStyle = '#ffffff';
+  ctx.fillStyle = '#e8ede8';
   ctx.shadowColor = 'rgba(0, 0, 0, 0.95)';
   ctx.shadowBlur = 6;
   ctx.shadowOffsetX = 1;
@@ -249,9 +249,9 @@ export default function ThreeIndiaMap({
 
     // 4. Subtle State & Basin Administrative Boundaries
     const borderMat = new THREE.LineBasicMaterial({
-      color: 0x64748b,
+      color: 0x3d5a47,
       transparent: true,
-      opacity: 0.35,
+      opacity: 0.38,
       linewidth: 1
     });
 
@@ -269,11 +269,11 @@ export default function ThreeIndiaMap({
       const pts = river.coords.map(([lon, lat]) => geoToVector3(lat, lon, 0.15));
       const curve = new THREE.CatmullRomCurve3(pts);
 
-      // Natural river channel: Dark Prussian-blue water ribbon hugging the terrain
+      // Natural river channel: Deep dark natural reservoir water ribbon hugging the terrain
       const riverGeo = new THREE.TubeGeometry(curve, pts.length * 3, 0.32, 5, false);
       const naturalRiverMat = new THREE.MeshStandardMaterial({
-        color: 0x0e2744,
-        emissive: 0x000000, // Non-emissive by default per requirement 3!
+        color: 0x0f2922,
+        emissive: 0x000000, // Non-emissive by default
         roughness: 0.45,
         metalness: 0.65,
         transparent: true,
@@ -290,7 +290,7 @@ export default function ThreeIndiaMap({
           const tribCurve = new THREE.CatmullRomCurve3(tribPts);
           const tribGeo = new THREE.TubeGeometry(tribCurve, tribPts.length * 3, 0.28, 5, false);
           const tribMat = new THREE.MeshStandardMaterial({
-            color: 0x0e2744,
+            color: 0x0f2922,
             emissive: 0x000000,
             roughness: 0.45,
             metalness: 0.65,
@@ -316,7 +316,7 @@ export default function ThreeIndiaMap({
     pulseGeo.setAttribute('position', new THREE.BufferAttribute(pulsePositions, 3));
 
     const pulseMat = new THREE.PointsMaterial({
-      color: 0x38bdf8,
+      color: 0x6bbf9e,
       size: 2.8,
       transparent: true,
       opacity: 0.95,
@@ -343,7 +343,7 @@ export default function ThreeIndiaMap({
     });
     scene.add(landmarkGroup);
 
-    // 8. Dam Interactive 3D Markers (Tactical UI Chrome)
+    // 8. Dam Interactive 3D Markers (Tactical UI Chrome - Distinct Reservoir Palette)
     const markers = [];
     const markerGroup = new THREE.Group();
     scene.add(markerGroup);
@@ -359,8 +359,8 @@ export default function ThreeIndiaMap({
       // Base glowing tactical pad
       const basePadGeo = new THREE.CylinderGeometry(2.4, 2.8, 0.6, 16);
       const basePadMat = new THREE.MeshStandardMaterial({
-        color: isCurrent ? 0x06b6d4 : 0x0ea5e9,
-        emissive: isCurrent ? 0x06b6d4 : 0x0284c7,
+        color: isCurrent ? 0x4a9d7f : 0x2d6b54,
+        emissive: isCurrent ? 0x6bbf9e : 0x3d7a52,
         emissiveIntensity: 0.95
       });
       const basePad = new THREE.Mesh(basePadGeo, basePadMat);
@@ -370,7 +370,7 @@ export default function ThreeIndiaMap({
       const ringGeo = new THREE.RingGeometry(2.8, 3.8, 24);
       ringGeo.rotateX(-Math.PI / 2);
       const ringMat = new THREE.MeshBasicMaterial({
-        color: isCurrent ? 0x22d3ee : 0x38bdf8,
+        color: isCurrent ? 0x6bbf9e : 0x4a9d7f,
         side: THREE.DoubleSide,
         transparent: true,
         opacity: 0.85
@@ -382,7 +382,7 @@ export default function ThreeIndiaMap({
       const pulseRingGeo = new THREE.RingGeometry(3.9, 4.4, 24);
       pulseRingGeo.rotateX(-Math.PI / 2);
       const pulseRingMat = new THREE.MeshBasicMaterial({
-        color: 0x06b6d4,
+        color: 0x4a9d7f,
         side: THREE.DoubleSide,
         transparent: true,
         opacity: 0.4
@@ -393,9 +393,9 @@ export default function ThreeIndiaMap({
       // Vertical holographic tactical beam
       const beamGeo = new THREE.CylinderGeometry(0.3, 0.8, 16, 8);
       const beamMat = new THREE.MeshBasicMaterial({
-        color: isCurrent ? 0x06b6d4 : 0x38bdf8,
+        color: isCurrent ? 0x4a9d7f : 0x6bbf9e,
         transparent: true,
-        opacity: isCurrent ? 0.8 : 0.45
+        opacity: isCurrent ? 0.85 : 0.45
       });
       const beam = new THREE.Mesh(beamGeo, beamMat);
       beam.position.y = 8;
@@ -404,8 +404,8 @@ export default function ThreeIndiaMap({
       // Apex beacon sphere
       const sphereGeo = new THREE.SphereGeometry(1.2, 12, 12);
       const sphereMat = new THREE.MeshStandardMaterial({
-        color: isCurrent ? 0xffffff : 0x38bdf8,
-        emissive: isCurrent ? 0x06b6d4 : 0x0284c7,
+        color: isCurrent ? 0xe8ede8 : 0x6bbf9e,
+        emissive: isCurrent ? 0x6bbf9e : 0x3d7a52,
         emissiveIntensity: 1.4
       });
       const sphere = new THREE.Mesh(sphereGeo, sphereMat);
@@ -581,17 +581,17 @@ export default function ThreeIndiaMap({
     markersRef.current.forEach(m => {
       const isCurrent = m.dam.id === selectedDam.id;
       if (m.basePadMat) {
-        m.basePadMat.color.setHex(isCurrent ? 0x06b6d4 : 0x0ea5e9);
-        m.basePadMat.emissive.setHex(isCurrent ? 0x06b6d4 : 0x0284c7);
+        m.basePadMat.color.setHex(isCurrent ? 0x4a9d7f : 0x2d6b54);
+        m.basePadMat.emissive.setHex(isCurrent ? 0x6bbf9e : 0x3d7a52);
         m.basePadMat.emissiveIntensity = isCurrent ? 1.6 : 0.95;
       }
       if (m.sphere) {
         m.sphere.material.emissiveIntensity = isCurrent ? 2.2 : 1.2;
-        m.sphere.material.color.setHex(isCurrent ? 0xffffff : 0x38bdf8);
+        m.sphere.material.color.setHex(isCurrent ? 0xe8ede8 : 0x6bbf9e);
       }
       if (m.beam) {
         m.beam.material.opacity = isCurrent ? 0.85 : 0.45;
-        m.beam.material.color.setHex(isCurrent ? 0x06b6d4 : 0x38bdf8);
+        m.beam.material.color.setHex(isCurrent ? 0x4a9d7f : 0x6bbf9e);
       }
     });
 
@@ -602,10 +602,10 @@ export default function ThreeIndiaMap({
       riversDataRef.current.forEach(r => {
         const isSelectedReach = r.damId === selectedDam.id;
         if (isSelectedReach) {
-          // Tactical highlighted downstream reach
-          r.mesh.material.emissive.setHex(0x06b6d4);
+          // Tactical highlighted downstream reach: Glowing reservoir teal-green
+          r.mesh.material.emissive.setHex(0x4a9d7f);
           r.mesh.material.emissiveIntensity = 1.6;
-          r.mesh.material.color.setHex(0x22d3ee);
+          r.mesh.material.color.setHex(0x6bbf9e);
           r.mesh.material.opacity = 1.0;
           if (!matchedCurve || r.isTributary) {
             matchedCurve = r.curve;
@@ -614,7 +614,7 @@ export default function ThreeIndiaMap({
           // Natural dark satellite river channel (non-emissive)
           r.mesh.material.emissive.setHex(0x000000);
           r.mesh.material.emissiveIntensity = 0.0;
-          r.mesh.material.color.setHex(0x0e2744);
+          r.mesh.material.color.setHex(0x0f2922);
           r.mesh.material.opacity = 0.88;
         }
       });
@@ -650,7 +650,7 @@ export default function ThreeIndiaMap({
   };
 
   return (
-    <div className="w-full relative overflow-hidden rounded-2xl border border-cyan-900/50 bg-[#060a13] shadow-2xl">
+    <div className="w-full relative overflow-hidden rounded-2xl border border-slate-800 bg-[#0a100c] shadow-2xl">
       {/* 3D Canvas Mount Point */}
       <div 
         ref={mountRef} 
@@ -660,7 +660,7 @@ export default function ThreeIndiaMap({
 
       {/* Top Left HUD Telemetry Overlay */}
       <div className="absolute top-4 left-4 flex flex-col gap-2 pointer-events-none">
-        <div className="bg-[#091120]/90 backdrop-blur-md px-3.5 py-2 rounded-xl border border-cyan-800/60 shadow-xl flex items-center gap-2.5">
+        <div className="bg-[#101a14]/90 backdrop-blur-md px-3.5 py-2 rounded-xl border border-cyan-800/50 shadow-xl flex items-center gap-2.5">
           <span className="w-2.5 h-2.5 rounded-full bg-cyan-400 animate-ping" />
           <div className="font-mono text-xs">
             <span className="text-cyan-400 font-bold tracking-wider">
@@ -673,7 +673,7 @@ export default function ThreeIndiaMap({
         </div>
 
         {/* Selected Dam Chip */}
-        <div className="bg-[#0b162c]/85 backdrop-blur-md px-3 py-1.5 rounded-lg border border-slate-700/80 text-[11px] font-mono flex items-center gap-3">
+        <div className="bg-[#131f18]/85 backdrop-blur-md px-3 py-1.5 rounded-lg border border-slate-700/80 text-[11px] font-mono flex items-center gap-3">
           <span className="text-slate-400">ACTIVE BASIN:</span>
           <span className="text-cyan-300 font-semibold">{selectedDam?.river || 'Cauvery'}</span>
           <span className="text-slate-600">|</span>
@@ -711,14 +711,14 @@ export default function ThreeIndiaMap({
             left: `${Math.min(window.innerWidth - 320, Math.max(20, hudPos.x + 18))}px`,
             top: `${Math.min(460, Math.max(20, hudPos.y - 70))}px`,
           }}
-          className="absolute z-20 pointer-events-none w-72 bg-[#091224]/95 backdrop-blur-xl border border-cyan-500/60 rounded-xl p-3 shadow-2xl shadow-cyan-950/60 space-y-2.5 animate-in fade-in zoom-in-95 duration-150"
+          className="absolute z-20 pointer-events-none w-72 bg-[#101a14]/95 backdrop-blur-xl border border-cyan-500/60 rounded-xl p-3 shadow-2xl shadow-slate-950/80 space-y-2.5 animate-in fade-in zoom-in-95 duration-150"
         >
           <div className="flex items-start justify-between gap-2 border-b border-slate-800 pb-2">
             <div>
               <span className="text-[10px] font-mono uppercase px-1.5 py-0.5 rounded bg-cyan-950 text-cyan-300 border border-cyan-800">
                 {hoveredDam.state}
               </span>
-              <h4 className="font-display font-bold text-sm text-white mt-1">
+              <h4 className="font-display font-bold text-sm text-slate-100 mt-1">
                 {hoveredDam.name}
               </h4>
             </div>
@@ -762,7 +762,7 @@ export default function ThreeIndiaMap({
       )}
 
       {/* Bottom Bar: Interactive Dam Selection Chips & Photorealistic Legend */}
-      <div className="absolute bottom-3 left-3 right-3 flex flex-wrap items-center justify-between gap-3 bg-[#081020]/90 backdrop-blur-md px-4 py-2.5 rounded-xl border border-slate-800/90 shadow-2xl">
+      <div className="absolute bottom-3 left-3 right-3 flex flex-wrap items-center justify-between gap-3 bg-[#0d1410]/95 backdrop-blur-md px-4 py-2.5 rounded-xl border border-slate-800/90 shadow-2xl">
         {/* Dam Quick-Select Chips */}
         <div className="flex items-center gap-2 overflow-x-auto no-scrollbar">
           <span className="text-[11px] font-mono text-slate-400 uppercase hidden sm:inline">
@@ -793,7 +793,7 @@ export default function ThreeIndiaMap({
         <div className="flex items-center gap-3">
           <div className="text-[10px] font-mono text-slate-400 hidden xl:flex items-center gap-3">
             <span className="flex items-center gap-1">
-              <span className="w-2.5 h-1 bg-[#0e2744] border border-slate-600 inline-block" /> Natural Riverbed
+              <span className="w-2.5 h-1 bg-[#0f2922] border border-slate-600 inline-block" /> Natural Riverbed
             </span>
             <span className="flex items-center gap-1">
               <span className="w-2.5 h-1 bg-cyan-400 inline-block" /> Active Surge Reach
@@ -805,7 +805,7 @@ export default function ThreeIndiaMap({
 
           <button
             onClick={onProceedToBreach}
-            className="btn btn-primary text-xs font-semibold px-4 py-2 shadow-lg shadow-cyan-500/20 flex items-center gap-1.5"
+            className="btn btn-primary text-xs font-semibold px-4 py-2 shadow-lg shadow-cyan-600/20 flex items-center gap-1.5"
           >
             <span>Proceed to Breach Scenario</span>
             <ArrowRight className="w-3.5 h-3.5" />

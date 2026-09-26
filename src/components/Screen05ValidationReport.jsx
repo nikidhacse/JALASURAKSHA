@@ -72,13 +72,13 @@ export default function Screen05ValidationReport({
   return (
     <div className="max-w-[1720px] mx-auto px-4 py-6 space-y-6 animate-screen-enter">
       {/* Header Banner */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-5 rounded-xl bg-gradient-to-r from-slate-900/90 via-[#0a1828] to-slate-900/90 border border-cyan-900/40 shadow-xl">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-5 rounded-xl bg-gradient-to-r from-slate-900/90 via-[#121f17] to-slate-900/90 border border-cyan-900/40 shadow-xl">
         <div className="space-y-1">
           <div className="flex items-center gap-2">
             <span className="badge badge-cyan">MODULE 05 // NTRO SATELLITE VALIDATION & HISTORICAL BENCHMARKS</span>
             <span className="badge badge-emerald">SENTINEL-1 SAR & ICOLD CALIBRATED</span>
           </div>
-          <h1 className="text-2xl md:text-3xl font-display font-bold text-white tracking-tight">
+          <h1 className="text-2xl md:text-3xl font-display font-bold text-slate-100 tracking-tight">
             Satellite Reality Check, Historical Disaster Calibrations & HADR Export Suite
           </h1>
           <p className="text-sm text-slate-400 max-w-4xl">
@@ -89,7 +89,7 @@ export default function Screen05ValidationReport({
         <div className="flex items-center gap-3">
           <button
             onClick={() => setReportModalOpen(true)}
-            className="btn btn-primary text-sm font-semibold px-5 py-2.5 shadow-lg shadow-cyan-500/25 flex items-center gap-2 cursor-pointer"
+            className="btn btn-primary text-sm font-semibold px-5 py-2.5 shadow-lg shadow-cyan-600/25 flex items-center gap-2 cursor-pointer"
           >
             <Printer className="w-4 h-4" />
             <span>View Full Official SITREP</span>
@@ -184,10 +184,10 @@ export default function Screen05ValidationReport({
 
                   {/* Draggable Divider Line */}
                   <div
-                    className="absolute top-0 bottom-0 w-1 bg-cyan-400 shadow-[0_0_10px_#22d3ee] z-20 pointer-events-none"
+                    className="absolute top-0 bottom-0 w-1 bg-cyan-400 shadow-[0_0_10px_#6bbf9e] z-20 pointer-events-none"
                     style={{ left: `${sliderPosition}%` }}
                   >
-                    <div className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-8 h-8 rounded-full bg-slate-900 border-2 border-cyan-400 flex items-center justify-center text-white shadow-lg text-[10px]">
+                    <div className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-8 h-8 rounded-full bg-slate-900 border-2 border-cyan-400 flex items-center justify-center text-slate-100 shadow-lg text-[10px]">
                       ⬌
                     </div>
                   </div>
@@ -464,10 +464,10 @@ export default function Screen05ValidationReport({
                           }).join(' ')}
                         />
 
-                        {/* Simulated Outflow Curve (Cyan) */}
+                        {/* Simulated Outflow Curve (Muted Reservoir Teal) */}
                         <polyline
                           fill="none"
-                          stroke="#22d3ee"
+                          stroke="#6bbf9e"
                           strokeWidth="2.5"
                           points={activeBenchmark.hydrographData.map((pt, i) => {
                             const x = 40 + (i / (activeBenchmark.hydrographData.length - 1)) * 440;
@@ -477,8 +477,8 @@ export default function Screen05ValidationReport({
                         />
 
                         {/* Peak Dot indicator */}
-                        <circle cx="210" cy="15" r="4" fill="#22d3ee" />
-                        <circle cx="210" cy="15" r="7" fill="none" stroke="#22d3ee" strokeOpacity="0.4" />
+                        <circle cx="210" cy="15" r="4" fill="#6bbf9e" />
+                        <circle cx="210" cy="15" r="7" fill="none" stroke="#6bbf9e" strokeOpacity="0.4" />
                       </svg>
                     </div>
                   </div>
@@ -657,12 +657,12 @@ export default function Screen05ValidationReport({
       {/* Full Modal Viewer for Official HADR SITREP */}
       {reportModalOpen && (
         <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-4">
-          <div className="bg-[#0b1322] border border-cyan-500/50 w-full max-w-4xl max-h-[85vh] rounded-2xl flex flex-col shadow-2xl overflow-hidden">
+          <div className="bg-[#101912] border border-cyan-500/50 w-full max-w-4xl max-h-[85vh] rounded-2xl flex flex-col shadow-2xl overflow-hidden">
             {/* Modal Header */}
             <div className="p-4 border-b border-slate-800 flex items-center justify-between bg-slate-950">
               <div className="flex items-center gap-2">
                 <FileText className="w-5 h-5 text-cyan-400" />
-                <h3 className="font-display font-bold text-white text-base">
+                <h3 className="font-display font-bold text-slate-100 text-base">
                   Official NDMA / NTRO HADR Situation Report (SITREP)
                 </h3>
               </div>
@@ -676,7 +676,7 @@ export default function Screen05ValidationReport({
                 </button>
                 <button
                   onClick={() => setReportModalOpen(false)}
-                  className="px-3 py-1.5 rounded-md bg-slate-800 hover:bg-slate-700 text-xs font-semibold text-white cursor-pointer"
+                  className="px-3 py-1.5 rounded-md bg-slate-800 hover:bg-slate-700 text-xs font-semibold text-slate-100 cursor-pointer"
                 >
                   Close
                 </button>
@@ -684,7 +684,7 @@ export default function Screen05ValidationReport({
             </div>
 
             {/* Modal Body */}
-            <div className="p-5 overflow-y-auto font-mono text-xs text-slate-200 whitespace-pre-wrap leading-relaxed bg-[#070d18]">
+            <div className="p-5 overflow-y-auto font-mono text-xs text-slate-200 whitespace-pre-wrap leading-relaxed bg-[#0d1410]">
               {hadrReportContent}
             </div>
           </div>

@@ -174,7 +174,7 @@ export default function Screen04ImpactEvacuation({
   return (
     <div className="max-w-[1720px] mx-auto px-4 py-6 space-y-6">
       {/* Header Banner */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-5 rounded-xl bg-gradient-to-r from-slate-900/90 via-[#181124] to-slate-900/90 border border-purple-900/40 shadow-xl">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-5 rounded-xl bg-gradient-to-r from-slate-900/90 via-[#152219] to-slate-900/90 border border-purple-900/40 shadow-xl">
         <div className="space-y-1">
           <div className="flex items-center gap-2">
             <span className="badge badge-purple">MODULE 04 // DECISION INTELLIGENCE</span>
@@ -185,7 +185,7 @@ export default function Screen04ImpactEvacuation({
               </span>
             )}
           </div>
-          <h1 className="text-2xl md:text-3xl font-display font-bold text-white tracking-tight">
+          <h1 className="text-2xl md:text-3xl font-display font-bold text-slate-100 tracking-tight">
             Infrastructure Impact & Dynamic Evacuation Engine
           </h1>
           <p className="text-sm text-slate-400 max-w-3xl">
@@ -206,7 +206,7 @@ export default function Screen04ImpactEvacuation({
 
           <button
             onClick={onProceedToValidation}
-            className="btn btn-primary text-sm font-semibold px-5 py-2.5 shadow-lg shadow-cyan-500/25 flex items-center gap-2 cursor-pointer"
+            className="btn btn-primary text-sm font-semibold px-5 py-2.5 shadow-lg shadow-cyan-600/25 flex items-center gap-2 cursor-pointer"
           >
             <span>Satellite Validation & Reports</span>
             <ArrowRight className="w-4 h-4" />

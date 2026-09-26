@@ -35,3 +35,5 @@ ENV/
 *.sln
 *.sw?
 
+# Simulation dynamic caches
+data/cache/
