@@ -105,21 +105,33 @@ export function simulatePropagationState({
   solverType = 'delft3d' // 'delft3d' | 'sph'
 }) {
   const g = 9.81;
-  const slope = dam.riverSlope;
-  const n = dam.manningsN;
-  const centerline = dam.riverCenterline;
+  const slope = dam.riverSlope || 0.0015;
+  const n = dam.manningsN || 0.035;
+  const centerline = (dam.riverCenterline && dam.riverCenterline.length > 0)
+    ? dam.riverCenterline
+    : (dam.coordinates ? [
+        dam.coordinates,
+        [dam.coordinates[0] - 0.015, dam.coordinates[1] + 0.035],
+        [dam.coordinates[0] - 0.025, dam.coordinates[1] + 0.080],
+        [dam.coordinates[0] - 0.020, dam.coordinates[1] + 0.140],
+        [dam.coordinates[0] - 0.010, dam.coordinates[1] + 0.220],
+        [dam.coordinates[0] - 0.005, dam.coordinates[1] + 0.310]
+      ] : [[11.4704, 77.1132], [11.4580, 77.1350], [11.4420, 77.1650]]);
   const totalWaypoints = centerline.length;
   
   // Wavefront propagation speed
   // SPH propagates ~18% faster due to 3D surface kinetic energy conservation
   const speedFactor = solverType === 'sph' ? 1.18 : 1.0;
-  const baseVelocityMs = (breachInfo.delft3DMetrics.maxWavefrontVelocityMs * 0.85) * speedFactor; // m/s
+  const maxVel = breachInfo?.delft3DMetrics?.maxWavefrontVelocityMs || 7.2;
+  const baseVelocityMs = (maxVel * 0.85) * speedFactor; // m/s
   
   // Approximate distance reached by flood wave in kilometers
   const distanceReachedKm = (baseVelocityMs * (currentSimMinute * 60)) / 1000;
   
   // Total reach length estimated
-  const totalReachKm = dam.elevationProfile[dam.elevationProfile.length - 1].km;
+  const totalReachKm = (dam.elevationProfile && dam.elevationProfile.length > 0)
+    ? dam.elevationProfile[dam.elevationProfile.length - 1].km
+    : 50;
   const progressRatio = Math.min(1.0, distanceReachedKm / Math.max(1, totalReachKm));
   
   // Active reached waypoint index
@@ -132,7 +144,8 @@ export function simulatePropagationState({
   const currentDamDischarge = getDischargeAtTime(currentSimMinute, breachInfo);
 
   // Compute flood status for each downstream settlement
-  const settlementsStatus = dam.settlements.map((set) => {
+  const settlements = (dam.settlements && dam.settlements.length > 0) ? dam.settlements : [];
+  const settlementsStatus = settlements.map((set) => {
     // Arrival time adjusted by solver speed and breach intensity
     const intensityMultiplier = Math.sqrt(10000 / Math.max(1000, breachInfo.peakDischargeM3s));
     const effectiveArrivalTimeMin = Math.round(set.criticalArrivalTimeMin * intensityMultiplier * (solverType === 'sph' ? 0.88 : 1.0));

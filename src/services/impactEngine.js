@@ -5,11 +5,15 @@ export function assessInfrastructureImpact({ dam, simulationState, breachInfo })
   const { currentSimMinute, settlementsStatus, distanceReachedKm, floodedAreaKm2 } = simulationState;
   const infra = dam.infrastructure;
 
+  const maxReachKm = (dam.elevationProfile && dam.elevationProfile.length > 0)
+    ? dam.elevationProfile[dam.elevationProfile.length - 1].km
+    : 50;
+
   // Fraction of total reach impacted
-  const reachFraction = Math.min(1.0, distanceReachedKm / Math.max(1, dam.elevationProfile[dam.elevationProfile.length - 1].km));
+  const reachFraction = Math.min(1.0, distanceReachedKm / Math.max(1, maxReachKm));
 
   // 1. Buildings Damage Analysis
-  const totalBuildingsInBasin = infra.totalBuildingsEstimated;
+  const totalBuildingsInBasin = infra?.totalBuildingsEstimated || 5000;
   const floodedBuildings = Math.round(totalBuildingsInBasin * reachFraction * 0.58);
   
   // USBR Hazard Rating Distribution
@@ -18,12 +22,13 @@ export function assessInfrastructureImpact({ dam, simulationState, breachInfo })
   const partialInundation = Math.round(floodedBuildings * 0.48);
 
   // 2. Roads Submergence
-  const totalRoadsKm = infra.totalRoadsKm;
+  const totalRoadsKm = infra?.totalRoadsKm || 120.0;
   const submergedRoadsKm = Number((totalRoadsKm * reachFraction * 0.45).toFixed(1));
   const cutOffRoadIntersections = Math.round(submergedRoadsKm * 0.8);
 
   // 3. Bridges Status Assessment
-  const bridgesStatus = infra.bridges.map((br) => {
+  const bridges = infra?.bridges || [];
+  const bridgesStatus = bridges.map((br) => {
     const isCutOff = currentSimMinute >= br.inundationTimeMin;
     const timeRemaining = br.inundationTimeMin - currentSimMinute;
     
@@ -51,16 +56,18 @@ export function assessInfrastructureImpact({ dam, simulationState, breachInfo })
   });
 
   // 4. Hospitals Assessment
-  const hospitalsStatus = infra.hospitals.map((hosp) => {
+  const hospitals = infra?.hospitals || [];
+  const hospitalsStatus = hospitals.map((hosp) => {
     // Distance from dam approximation
     return {
       ...hosp,
-      status: hosp.floodRisk.includes('Severe') ? 'URGENT EVACUATION' : hosp.floodRisk.includes('High') ? 'PREPARE EVACUATION' : 'SAFE RECEPTION'
+      status: hosp.floodRisk?.includes('Severe') ? 'URGENT EVACUATION' : hosp.floodRisk?.includes('High') ? 'PREPARE EVACUATION' : 'SAFE RECEPTION'
     };
   });
 
   // 5. Schools and Designated Shelters
-  const sheltersStatus = infra.schoolsShelters.map((sh) => {
+  const shelters = infra?.schoolsShelters || [];
+  const sheltersStatus = shelters.map((sh) => {
     return {
       ...sh,
       occupancyPercent: Math.min(95, Math.round(reachFraction * 85)),

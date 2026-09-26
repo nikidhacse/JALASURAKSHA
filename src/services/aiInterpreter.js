@@ -9,13 +9,16 @@ export function interpretHydrodynamicRisk({
   impactData
 }) {
   const { currentSimMinute, settlementsStatus, distanceReachedKm } = simulationState;
-  const criticalSettlements = settlementsStatus.filter(s => s.isReached || s.minutesUntilFlood < 45);
+  const criticalSettlements = settlementsStatus?.filter(s => s.isReached || s.minutesUntilFlood < 45) || [];
 
-  const highestRiskSettlement = settlementsStatus.slice().sort((a, b) => a.minutesUntilFlood - b.minutesUntilFlood)[0] || settlementsStatus[0];
+  const defaultHighRisk = { name: 'Downstream Sector', minutesUntilFlood: 30, peakDepthM: 2.5, currentDepthM: 0 };
+  const highestRiskSettlement = (settlementsStatus && settlementsStatus.length > 0)
+    ? (settlementsStatus.slice().sort((a, b) => a.minutesUntilFlood - b.minutesUntilFlood)[0] || settlementsStatus[0])
+    : defaultHighRisk;
 
   // Tactical situation assessment
   let threatLevel = 'MODERATE';
-  if (breachInfo.peakDischargeM3s > 8000 || highestRiskSettlement.minutesUntilFlood <= 20) {
+  if ((breachInfo?.peakDischargeM3s || 0) > 8000 || (highestRiskSettlement.minutesUntilFlood || 30) <= 20) {
     threatLevel = 'CRITICAL CODE RED';
   } else if (breachInfo.peakDischargeM3s > 4000 || highestRiskSettlement.minutesUntilFlood <= 45) {
     threatLevel = 'SEVERE CODE ORANGE';

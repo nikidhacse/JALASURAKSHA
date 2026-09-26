@@ -108,8 +108,8 @@ export default function App() {
   const evacuationData = useMemo(() => {
     return calculateEvacuationOptions({
       dam: selectedDam,
-      originSettlementId: selectedDam.settlements[0]?.id,
-      destinationShelterId: selectedDam.infrastructure.schoolsShelters[0]?.id,
+      originSettlementId: selectedDam?.settlements?.[0]?.id,
+      destinationShelterId: selectedDam?.infrastructure?.schoolsShelters?.[0]?.id,
       currentSimMinute: simMinute
     });
   }, [selectedDam, simMinute]);

@@ -8,11 +8,26 @@ export function calculateEvacuationOptions({
   currentSimMinute = 20,
   averageVehicleSpeedKmh = 35
 }) {
-  const settlement = dam.settlements.find(s => s.id === originSettlementId) || dam.settlements[0];
-  const shelter = dam.infrastructure.schoolsShelters.find(sh => sh.id === destinationShelterId) || dam.infrastructure.schoolsShelters[0];
+  const defaultSettlement = {
+    id: `${dam?.id || 'dam'}-default-set`,
+    name: 'Downstream Settlement',
+    coords: dam?.coordinates || [11.4704, 77.1132],
+    elevationM: 200,
+    criticalArrivalTimeMin: 25
+  };
+  const defaultShelter = {
+    id: `${dam?.id || 'dam'}-default-sh`,
+    name: 'District Flood Evacuation Shelter',
+    coords: [(dam?.coordinates?.[0] || 11.4704) + 0.05, (dam?.coordinates?.[1] || 77.1132) + 0.05],
+    elevationM: 240
+  };
+  const settlements = dam?.settlements || [];
+  const shelters = dam?.infrastructure?.schoolsShelters || [];
+  const settlement = settlements.find(s => s.id === originSettlementId) || settlements[0] || defaultSettlement;
+  const shelter = shelters.find(sh => sh.id === destinationShelterId) || shelters[0] || defaultShelter;
   
   // Flood wave arrival time at this origin settlement
-  const floodArrivalTimeMin = settlement.criticalArrivalTimeMin;
+  const floodArrivalTimeMin = settlement.criticalArrivalTimeMin || 25;
 
   // We generate 3 realistic evacuation route options
   const routes = [
