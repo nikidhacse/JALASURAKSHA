@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌊</text></svg>" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>JALASURAKSHA | AI Digital Twin for Dam-Break Simulation, Impact Prediction & Evacuation</title>
+    <meta name="description" content="SIH26161 / PS161 NTRO: Generalized Hydrodynamic Dam-Break Inundation Digital Twin with SPH & Delft3D modelling, Infrastructure Impact, Evacuation Routing, and Satellite Reality Check." />
+    
+    <!-- Google Fonts: Space Grotesk, Inter, JetBrains Mono -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              slate: {
+                950: '#070b14',
+              }
+            },
+            fontFamily: {
+              sans: ['Inter', 'sans-serif'],
+              display: ['Space Grotesk', 'sans-serif'],
+              mono: ['JetBrains Mono', 'monospace'],
+            }
+          }
+        }
+      }
+    </script>
+  </head>
+  <body class="bg-slate-950 text-slate-100 antialiased selection:bg-cyan-500 selection:text-white" style="background-color: #070b14; color: #f8fafc; margin: 0;">
+    <div id="root">
+      <div style="min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; background-color: #070b14; color: #f8fafc; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">
+        <div style="position: relative; width: 56px; height: 56px; display: flex; align-items: center; justify-content: center; margin-bottom: 20px;">
+          <div style="position: absolute; inset: 0; border: 3px solid rgba(6, 182, 212, 0.2); border-top-color: #06b6d4; border-radius: 50%; animation: spin 0.8s linear infinite;"></div>
+          <span style="font-size: 24px;">🌊</span>
+        </div>
+        <div style="font-size: 15px; font-weight: 700; letter-spacing: 0.12em; color: #38bdf8; text-transform: uppercase;">
+          JALASURAKSHA AI DIGITAL TWIN
+        </div>
+        <div style="font-size: 11px; font-family: monospace; color: #64748b; margin-top: 6px;">
+          SIH26161 (PS161) NTRO • Loading Hydrodynamic Models &amp; CartoDEM...
+        </div>
+        <style>
+          @keyframes spin {
+            to { transform: rotate(360deg); }
+          }
+        </style>
+      </div>
+    </div>
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
+</html>

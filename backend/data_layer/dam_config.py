@@ -1,0 +1,73 @@
+"""Configuration database of known dams and downstream basins for hydrodynamic simulation."""
+
+KNOWN_DAMS = {
+    "bhavanisagar": {
+        "dam_id": "bhavanisagar",
+        "name": "Bhavanisagar Dam",
+        "river": "Bhavani River",
+        "state": "Tamil Nadu",
+        "district": "Erode",
+        "lat": 11.4704,
+        "lon": 77.1132,
+        "dam_height_m": 40.0,
+        "crest_length_m": 8797.0,
+        "full_reservoir_level_m": 32.0,
+        "storage_capacity_m3": 928_000_000.0,  # 928 Mm³
+        "normal_discharge_m3s": 580.0,
+        "max_spillway_discharge_m3s": 3400.0,
+        "mannings_n": 0.035,
+        "dem_file": "dem/bhavanisagar.tif",
+        # Bounding Box: [min_lat, min_lon, max_lat, max_lon]
+        "downstream_bbox": [11.35, 77.00, 11.55, 77.40],
+        # Downstream monitoring settlements [name, lat, lon, approx_reach_km]
+        "settlements": [
+            {"name": "Sirumugai Town", "lat": 11.4420, "lon": 77.1650, "dist_km": 6.2},
+            {"name": "Sathyamangalam", "lat": 11.5050, "lon": 77.2400, "dist_km": 18.5},
+            {"name": "Gobichettipalayam", "lat": 11.4500, "lon": 77.3800, "dist_km": 34.0},
+        ],
+    },
+    "idukki": {
+        "dam_id": "idukki",
+        "name": "Idukki & Cheruthoni Dam",
+        "river": "Periyar River",
+        "state": "Kerala",
+        "district": "Idukki",
+        "lat": 9.8498,
+        "lon": 76.9744,
+        "dam_height_m": 168.9,
+        "crest_length_m": 365.0,
+        "full_reservoir_level_m": 732.4,
+        "storage_capacity_m3": 1_996_000_000.0,
+        "normal_discharge_m3s": 750.0,
+        "max_spillway_discharge_m3s": 5010.0,
+        "mannings_n": 0.048,
+        "dem_file": "dem/idukki.tif",
+        "downstream_bbox": [9.80, 76.85, 10.05, 77.05],
+        "settlements": [
+            {"name": "Cheruthoni Town", "lat": 9.8780, "lon": 76.9680, "dist_km": 3.5},
+            {"name": "Karimban", "lat": 9.9150, "lon": 76.9150, "dist_km": 12.0},
+        ],
+    },
+    "sardarsarovar": {
+        "dam_id": "sardarsarovar",
+        "name": "Sardar Sarovar Dam",
+        "river": "Narmada River",
+        "state": "Gujarat",
+        "district": "Narmada",
+        "lat": 21.8315,
+        "lon": 73.7485,
+        "dam_height_m": 163.0,
+        "crest_length_m": 1210.0,
+        "full_reservoir_level_m": 138.68,
+        "storage_capacity_m3": 9_500_000_000.0,
+        "normal_discharge_m3s": 2200.0,
+        "max_spillway_discharge_m3s": 84950.0,
+        "mannings_n": 0.030,
+        "dem_file": "dem/sardarsarovar.tif",
+        "downstream_bbox": [21.65, 73.20, 21.95, 73.80],
+        "settlements": [
+            {"name": "Garudeshwar", "lat": 21.8550, "lon": 73.7100, "dist_km": 8.5},
+            {"name": "Tilakwada", "lat": 21.9300, "lon": 73.5200, "dist_km": 28.0},
+        ],
+    },
+}

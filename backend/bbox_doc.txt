@@ -1,0 +1,30 @@
+
+Download OSM features within a lat-lon bounding box.
+
+You can use the `settings` module to retrieve a snapshot of historical OSM
+data as of a certain date, or to configure the Overpass server timeout,
+memory allocation, and other custom settings. This function searches for
+features using tags. For more details, see:
+https://wiki.openstreetmap.org/wiki/Map_features
+
+Parameters
+----------
+bbox
+    Bounding box as `(left, bottom, right, top)`. Coordinates should be in
+    unprojected latitude-longitude degrees (EPSG:4326).
+tags
+    Tags for finding elements in the selected area. Results are the union,
+    not intersection of the tags and each result matches at least one tag.
+    The keys are OSM tags (e.g. `building`, `landuse`, `highway`, etc) and
+    the values can be either `True` to retrieve all elements matching the
+    tag, or a string to retrieve a single `tag:value` combination, or a
+    list of strings to retrieve multiple values for the tag. For example,
+    `tags = {'building': True}` would return all buildings in the area.
+    Or, `tags = {'amenity':True, 'landuse':['retail','commercial'],
+    'highway':'bus_stop'}` would return all amenities, any landuse=retail,
+    any landuse=commercial, and any highway=bus_stop.
+
+Returns
+-------
+gdf
+    The features, multi-indexed by element type and OSM ID.
